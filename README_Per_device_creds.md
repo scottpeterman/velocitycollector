@@ -104,6 +104,44 @@ Coverage: 100.0%
 Tested: 100.0%
 ```
 
+## GUI Features
+
+### Devices View
+
+| Feature | Description |
+|---------|-------------|
+| **Cred Status Column** | Shows ✓ OK (green), ✗ Failed (red), or — (gray) for each device |
+| **Cred Coverage Stat** | Stat card showing percentage of devices with successful credential tests |
+| **Credential Filter** | Dropdown to filter by: All Creds, ✓ Success, ✗ Failed, ? Untested, No Cred |
+| **🔑 Discover Creds Button** | Bulk discovery for selected devices or all active devices |
+| **Multi-Select Support** | Select multiple devices and discover credentials via context menu |
+| **Ctrl+D Shortcut** | Quick access to credential discovery |
+
+### Device Detail Dialog
+
+| Feature | Description |
+|---------|-------------|
+| **Credentials Tab** | Shows assigned credential name, test result, and last tested timestamp |
+| **Test Button** | Test the assigned credential on-demand with vault password prompt |
+| **Status Display** | Color-coded test result (✓ Success / ✗ Failed / ? Untested) |
+
+### Device Edit Dialog
+
+| Feature | Description |
+|---------|-------------|
+| **Credential Dropdown** | Select from vault credentials, shows "(default)" marker |
+| **Test Button** | Test selected credential against device IP before saving |
+| **Status Labels** | Shows current test result and last tested time |
+| **Help Text** | Explains per-device credential workflow |
+
+### Run View
+
+| Feature | Description |
+|---------|-------------|
+| **Per-Device Creds Checkbox** | Enable/disable per-device credential usage (default: enabled) |
+| **Credential Column** | Results table shows which credential was used per device |
+| **Coverage Indicator** | Shows credential coverage percentage and warnings |
+
 ## Files Modified/Added
 
 ### New Files
@@ -123,6 +161,9 @@ Tested: 100.0%
 | `executor.py` | `vcollector/ssh/executor.py` | Per-device credential support in `_execute_single()` |
 | `runner.py` | `vcollector/jobs/runner.py` | `credential_resolver` param, credential cache |
 | `run.py` | `vcollector/cli/run.py` | Pass resolver to runner |
+| `devices_view.py` | `vcollector/ui/widgets/devices_view.py` | Cred status column, discovery button, filter |
+| `device_dialogs.py` | `vcollector/ui/widgets/device_dialogs.py` | Credentials tab, dropdown, test button |
+| `run_view.py` | `vcollector/ui/widgets/run_view.py` | Per-device creds checkbox, credential column |
 
 ## How Discovery Works
 
@@ -169,6 +210,8 @@ def _execute_single(self, host, command, extra_data=None):
 
 ## Example Workflow
 
+### CLI Workflow
+
 ```bash
 # 1. Initialize vault with credentials
 vcollector vault init
@@ -187,6 +230,22 @@ vcollector creds status
 # 5. Run jobs (credentials auto-selected)
 vcollector run --job cisco-configs
 ```
+
+### GUI Workflow
+
+1. **Add Credentials**: Vault view → + Add Credential
+2. **Add Devices**: Devices view → + Add Device (or import)
+3. **Discover Credentials**: 
+   - Select devices (or none for all)
+   - Click 🔑 Discover Creds
+   - Enter vault password
+   - Watch progress dialog
+4. **Verify Coverage**: Check Cred Coverage stat card (aim for 100%)
+5. **Run Jobs**: 
+   - Run view → Select job
+   - Ensure "Use per-device credentials" is checked
+   - Click ▶ Run Job
+   - Results table shows credential used per device
 
 ## DCIMRepository Helper Methods
 
@@ -233,9 +292,16 @@ Fresh installs automatically get v2 schema.
 
 ## Future Enhancements
 
-- [ ] GUI: Credential status column in Devices view
-- [ ] GUI: Credential dropdown in Device Edit dialog
+- [x] ~~GUI: Credential status column in Devices view~~ ✅ Complete
+- [x] ~~GUI: Credential dropdown in Device Edit dialog~~ ✅ Complete
+- [x] ~~GUI: Credential test button~~ ✅ Complete
+- [x] ~~GUI: Credential coverage stat card~~ ✅ Complete
+- [x] ~~GUI: Credential filter dropdown~~ ✅ Complete
+- [x] ~~GUI: Bulk discovery button~~ ✅ Complete
+- [x] ~~GUI: Per-device creds in Run view~~ ✅ Complete
 - [ ] Scheduled discovery (cron-like periodic testing)
 - [ ] Rate limiting to avoid account lockouts
 - [ ] Multi-credential support (password + key for privilege escalation)
 - [ ] BatchRunner integration for multi-job runs
+- [ ] Credential expiry warnings
+- [ ] Credential rotation support

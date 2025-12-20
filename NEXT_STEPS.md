@@ -1,6 +1,6 @@
 # VelocityCollector - Next Steps
 
-## Current State (v0.3.0)
+## Current State (v0.4.0)
 
 ### ✅ Working Features
 
@@ -17,6 +17,8 @@
 | TextFSM tools | — | Tools menu | Database test, manual test, template manager |
 | Coverage report | `python coverage_report.py` | — | HTML report generation |
 | Theme support | — | Toolbar | Light/Dark/Cyber |
+| **Credential discovery** | `vcollector creds *` | Devices view | Bulk test, per-device assignment |
+| **Per-device creds** | Auto | Run view checkbox | Runner uses device.credential_id |
 
 ### 🔶 Partially Working
 
@@ -29,61 +31,46 @@
 
 ---
 
-## Priority 1: Credential-Device Tracking
+## ~~Priority 1: Credential-Device Tracking~~ ✅ COMPLETE
 
-### Problem
-Currently, credentials are global. When running jobs against devices, the runner tries the default credential. If a network has devices with different credentials (common in real environments), there's no way to:
-1. Track which credential last worked on a specific device
-2. Automatically try the "known good" credential first
-3. Fall back to other credentials on failure
+### Implementation Summary
 
-### Proposed Solution
-
-**Database Schema Addition:**
+**Database Schema v2:**
 ```sql
--- Add to dcim.db or collector.db
-CREATE TABLE device_credentials (
-    id INTEGER PRIMARY KEY,
-    device_id INTEGER NOT NULL,
-    credential_id INTEGER NOT NULL,
-    last_success_at TEXT,
-    last_failure_at TEXT,
-    failure_count INTEGER DEFAULT 0,
-    is_preferred INTEGER DEFAULT 0,
-    notes TEXT,
-    FOREIGN KEY (device_id) REFERENCES dcim_device(id) ON DELETE CASCADE,
-    UNIQUE(device_id, credential_id)
-);
+-- Added to dcim_device table
+credential_id INTEGER           -- FK to credentials table (working credential)
+credential_tested_at TEXT       -- Last test timestamp  
+credential_test_result TEXT     -- 'untested', 'success', 'failed'
+
+-- Indexes
+CREATE INDEX idx_dcim_device_cred_result ON dcim_device(credential_test_result);
+CREATE INDEX idx_dcim_device_cred_tested ON dcim_device(credential_tested_at);
 ```
 
-**Runner Logic:**
-```python
-def get_credentials_for_device(device_id: int) -> List[SSHCredentials]:
-    """
-    Returns credentials in priority order:
-    1. Device's preferred credential (if set and recently successful)
-    2. Other credentials that worked on this device
-    3. Default credential
-    4. All other credentials
-    """
-```
+**CLI Commands:**
+- `vcollector creds discover` — Bulk credential testing
+- `vcollector creds test <device>` — Single device testing
+- `vcollector creds status` — Coverage report
 
-**On Success/Failure:**
-```python
-def record_credential_result(device_id, credential_id, success: bool):
-    # Update device_credentials table
-    # Set is_preferred = 1 if success
-    # Increment failure_count if failure
-```
+**GUI Features:**
+- ✅ Cred Status column in Devices view (✓ OK / ✗ Failed / —)
+- ✅ Credential Coverage stat card with percentage
+- ✅ Credential status filter dropdown
+- ✅ 🔑 Discover Creds button for bulk discovery
+- ✅ Credentials tab in Device Detail dialog
+- ✅ Credential dropdown in Device Edit dialog
+- ✅ Test button for on-demand credential testing
+- ✅ Per-device credentials checkbox in Run view
+- ✅ Credential column in job results table
 
-### UI Changes
-- Device edit dialog: "Credentials" tab showing credential history
-- Run results: Show which credential was used per device
-- Credentials view: Show device count per credential
+**Runner Integration:**
+- JobRunner accepts `credential_resolver` parameter
+- Devices with `credential_id` automatically use their assigned credential
+- Falls back to job default if no per-device credential
 
 ---
 
-## Priority 2: Batch Job Execution
+## Priority 1 (NEW): Batch Job Execution
 
 ### Problem
 The existing `BatchRunner` only works with JSON file paths. Need to:
@@ -139,7 +126,7 @@ vcollector run --jobs "arista-*" --parallel --max-concurrent 4
 
 ---
 
-## Priority 3: TextFSM Validation Fixes
+## Priority 2: TextFSM Validation Fixes
 
 ### Problem
 The validation system exists but may be broken. Core components:
@@ -178,7 +165,7 @@ vcollector run --job arista-arp-300 --force-save
 
 ---
 
-## Priority 4: Help System
+## Priority 3: Help System
 
 ### Problem
 No integrated help system. Users must rely on:
@@ -226,7 +213,7 @@ Help
 
 ---
 
-## Priority 5: Additional Improvements
+## Priority 4: Additional Improvements
 
 ### CLI Completions
 
@@ -308,21 +295,19 @@ vcollector daemon start  # Runs scheduled jobs
 
 ## File Reference
 
-### Files Delivered This Session
+### Files Delivered - Per-Device Credentials (v0.4)
 
 | File | Destination | Purpose |
 |------|-------------|---------|
-| `cli/main.py` | `vcollector/cli/main.py` | Updated CLI with GUI launch |
-| `cli/init.py` | `vcollector/cli/init.py` | Environment bootstrap |
-| `cli/jobs.py` | `vcollector/cli/jobs.py` | Database-first job commands |
-| `cli/run.py` | `vcollector/cli/run.py` | Database-first job execution |
-| `core/config.py` | `vcollector/core/config.py` | New config with dcim_db |
-| `setup.py` | `setup.py` | Package installation |
-| `MANIFEST.in` | `MANIFEST.in` | Source distribution |
-| `requirements.txt` | `requirements.txt` | Dependencies |
-| `LICENSE` | `LICENSE` | MIT license |
-| `.gitignore` | `.gitignore` | Clean repository |
-| `README.md` | `README.md` | Updated documentation |
+| `cred_discovery.py` | `vcollector/core/cred_discovery.py` | Core discovery engine |
+| `creds.py` | `vcollector/cli/creds.py` | CLI handler for creds command |
+| `db_schema.py` | `vcollector/dcim/db_schema.py` | Schema v2 with migration |
+| `dcim_repo.py` | `vcollector/dcim/dcim_repo.py` | Device dataclass + helper methods |
+| `devices_view.py` | `vcollector/ui/widgets/devices_view.py` | Cred status column, discovery |
+| `device_dialogs.py` | `vcollector/ui/widgets/device_dialogs.py` | Cred tab, dropdown, test button |
+| `run_view.py` | `vcollector/ui/widgets/run_view.py` | Per-device creds checkbox |
+| `executor.py` | `vcollector/ssh/executor.py` | Per-device credential support |
+| `runner.py` | `vcollector/jobs/runner.py` | credential_resolver param |
 
 ### External Scripts (Keep Separate)
 - `migrate_jobs.py` - JSON to database migration
@@ -334,26 +319,30 @@ vcollector daemon start  # Runs scheduled jobs
 
 ## Version Roadmap
 
-### v0.3.1 - Stability
+### v0.4.0 - Per-Device Credentials ✅
+- [x] Device-credential tracking (schema v2)
+- [x] Credential discovery CLI (`vcollector creds`)
+- [x] Credential discovery GUI (Devices view)
+- [x] Credential status column and filter
+- [x] Credential dropdown in device edit
+- [x] Test button in device dialogs
+- [x] Per-device credential override in runner
+- [x] Coverage stat card
+
+### v0.5.0 - Batch Execution (Planned)
+- [ ] Database-aware BatchRunner
+- [ ] Job tagging and filtering
+- [ ] Multi-select run in GUI
+- [ ] Pattern matching for job slugs
+
+### v0.6.0 - Polish
 - [ ] Fix TextFSM validation
 - [ ] Implement `vcollector jobs create`
 - [ ] Integrate `vcollector jobs migrate`
 - [ ] Add tooltips to GUI
 - [ ] Update About dialog
 
-### v0.4.0 - Credentials
-- [ ] Device-credential tracking
-- [ ] Credential fallback logic in runner
-- [ ] Credential history in device dialog
-- [ ] Per-device credential override
-
-### v0.5.0 - Batch Execution
-- [ ] Database-aware BatchRunner
-- [ ] Job tagging and filtering
-- [ ] Multi-select run in GUI
-- [ ] Pattern matching for job slugs
-
-### v0.6.0 - Integration
+### v0.7.0 - Integration
 - [ ] CSV device import
 - [ ] NetBox sync (read-only)
 - [ ] Help system

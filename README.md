@@ -15,6 +15,7 @@ VelocityCollector provides:
 - **Zero infrastructure** — Desktop app with SQLite databases, no servers required
 - **Structured job definitions** — Repeatable, version-controlled collection tasks
 - **Encrypted credential vault** — Fernet/PBKDF2 encryption, credentials never touch disk unencrypted
+- **Per-device credentials** — Automatic discovery and assignment of working credentials
 - **NetBox-compatible inventory** — Familiar data model, optional sync capability
 - **Vendor-neutral collection** — SSH-based, platform-aware command execution
 - **TextFSM validation** — Structured output parsing with quality scoring
@@ -24,7 +25,7 @@ VelocityCollector provides:
 
 ### Device Inventory
 ![Device Edit](screenshots/device_edit.png)
-*Device editing with Identity, Network, Hardware, and Notes tabs*
+*Device editing with Identity, Network, Credentials, Hardware, and Notes tabs*
 
 ### Credential Vault
 ![Credential Edit](screenshots/cred_edit.png)
@@ -71,7 +72,7 @@ VelocityCollector provides:
 │  • Devices      │  │  • BatchRunner  │  │  • Encryption   │
 │  • Platforms    │  │  • SSHExecutor  │  │  • Key Derivation│
 │  • Roles        │  │  • Validation   │  │  • Export/Import│
-│  • Manufacturers│  │  • TextFSM      │  │                 │
+│  • Manufacturers│  │  • TextFSM      │  │  • Discovery    │
 └────────┬────────┘  └────────┬────────┘  └────────┬────────┘
          │                    │                    │
          ▼                    ▼                    ▼
@@ -80,14 +81,14 @@ VelocityCollector provides:
 │                 │  │                 │  │   (encrypted)   │
 │  NetBox-style   │  │  • jobs         │  │                 │
 │  inventory      │  │  • job_history  │  │  • credentials  │
-│                 │  │  • captures     │  │  • vault_meta   │
+│  + cred mapping │  │  • captures     │  │  • vault_meta   │
 └─────────────────┘  └─────────────────┘  └─────────────────┘
 ```
 
 ### Database Design
 
 **dcim.db** — Device inventory (NetBox-compatible schema)
-- `dcim_device` — Network devices with management IPs, platform, role, site
+- `dcim_device` — Network devices with management IPs, platform, role, site, **credential mapping**
 - `dcim_site` — Physical locations with timezone, status, facility info
 - `dcim_platform` — OS/software platforms with netmiko device type mappings
 - `dcim_device_role` — Functional roles (router, switch, firewall) with colors
@@ -110,7 +111,7 @@ NetBox-inspired data model for organizing network devices:
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-| **Devices** | ✅ Complete | Full CRUD, search, filters (site/platform/status), tabbed edit dialog |
+| **Devices** | ✅ Complete | Full CRUD, search, filters (site/platform/status/creds), tabbed edit dialog |
 | **Sites** | ✅ Complete | Full CRUD, status filter, timezone dropdown, device counts |
 | **Platforms** | ✅ Complete | Tabbed view with Roles, netmiko device type dropdown |
 | **Roles** | ✅ Complete | Color picker, device count warnings on delete |
@@ -140,6 +141,26 @@ Supported credential types:
 - SSH private key (with optional passphrase)
 - Combined password + key for privilege escalation
 
+### Per-Device Credentials ✅ NEW
+
+Network environments often have fragmented credentials — legacy devices, acquisitions, different teams. VelocityCollector supports automatic credential discovery and per-device assignment:
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **Credential Discovery** | ✅ Complete | Bulk test all vault credentials against devices |
+| **Per-Device Assignment** | ✅ Complete | Store working credential per device |
+| **Coverage Tracking** | ✅ Complete | Stat card shows credential coverage percentage |
+| **Status Column** | ✅ Complete | Devices view shows ✓ OK / ✗ Failed / — Untested |
+| **Credential Filter** | ✅ Complete | Filter devices by credential status |
+| **Test Button** | ✅ Complete | Test credential from device detail/edit dialogs |
+| **Credential Dropdown** | ✅ Complete | Select credential in device edit dialog |
+| **Auto-Use in Jobs** | ✅ Complete | Runner automatically uses per-device credentials |
+
+**Credential Resolution Chain:**
+1. Device credential (`device.credential_id`) — from discovery
+2. CLI credential (`--credential <name>`) — explicit override  
+3. Default credential — vault default
+
 ### Job System ✅
 
 Jobs define what data to collect and from which devices. Jobs are stored in the database with full GUI and CLI management:
@@ -156,13 +177,14 @@ Jobs define what data to collect and from which devices. Jobs are stored in the 
 
 ### Collection Engine ✅
 
-Multi-threaded SSH execution:
+Multi-threaded SSH execution with per-device credential support:
 
 | Feature | Status | Description |
 |---------|--------|-------------|
 | **JobRunner** | ✅ Complete | Single job execution with progress callbacks |
 | **BatchRunner** | ✅ Complete | Parallel job execution |
 | **SSHExecutorPool** | ✅ Complete | Concurrent device connections |
+| **Per-Device Creds** | ✅ Complete | Automatic credential selection per device |
 | **Dual Source** | ✅ Complete | Load jobs from database (by slug/ID) or JSON files |
 | **History Recording** | ✅ Complete | Automatic job_history entries |
 | **Output Validation** | ✅ Complete | TextFSM parsing with score threshold |
@@ -212,11 +234,11 @@ Generates `coverage_report.html` showing:
 
 | View | Status | Description |
 |------|--------|-------------|
-| **Devices** | ✅ Complete | Full CRUD, filters, context menu, tabbed edit dialog |
+| **Devices** | ✅ Complete | Full CRUD, filters, credential status column, discovery button |
 | **Sites** | ✅ Complete | Full CRUD, timezone, status filter |
 | **Platforms** | ✅ Complete | Tabbed with Roles, netmiko dropdown |
 | **Jobs** | ✅ Complete | Full CRUD, capture type/vendor filters |
-| **Run** | ✅ Complete | Job execution with real-time progress |
+| **Run** | ✅ Complete | Job execution with per-device creds, real-time progress |
 | **Credentials** | ✅ Complete | Add/edit/delete, password + SSH key, default selection |
 | **Vault** | ✅ Complete | Lock/unlock, change password, export/import, reset |
 | **History** | ✅ Complete | Job execution history browser |
@@ -279,6 +301,7 @@ Confirm master password: ••••••••••••
 ```bash
 # CLI
 vcollector vault add lab --username admin
+vcollector vault add legacy --username netops
 
 # Or via GUI: Credentials → + Add Credential
 ```
@@ -304,7 +327,28 @@ core-1,172.16.2.1,cisco_ios,dc1,router,active
 
 Navigate to **Devices** → **+ Add Device**
 
-### 5. Create Jobs
+### 5. Discover Credentials
+
+Test all vault credentials against devices to find working combinations:
+
+```bash
+# CLI - discover credentials for all active devices
+vcollector creds discover
+
+# Filter by site/platform
+vcollector creds discover --site dc1
+vcollector creds discover --platform arista_eos
+
+# Check coverage
+vcollector creds status
+```
+
+**Or via GUI:**
+- Navigate to **Devices** view
+- Click **🔑 Discover Creds** button
+- Or select specific devices and use context menu → Credentials → Discover
+
+### 6. Create Jobs
 
 **Option A: Migrate from JSON files**
 
@@ -321,7 +365,7 @@ Navigate to **Jobs** → **+ Add Job**:
 - **Execution Tab**: Max workers, timeout, protocol
 - **Device Filters Tab**: Site, platform, role, name pattern, status
 
-### 6. Run Collection
+### 7. Run Collection
 
 **CLI (database-first)**:
 
@@ -342,22 +386,16 @@ vcollector run --job arista-arp-300 --dry-run
 vcollector run --job arista-arp-300 --debug
 ```
 
-**CLI (legacy JSON files)**:
-
-```bash
-vcollector run --job jobs/cisco_configs.json
-```
-
 **GUI**:
 
 Navigate to **Run**:
 1. Select job from dropdown
-2. Set options (device limit, validation, debug)
+2. Set options (device limit, validation, per-device credentials)
 3. Click **▶ Run Job**
 4. Enter vault password (or set `VCOLLECTOR_VAULT_PASS` env var)
-5. Watch real-time progress
+5. Watch real-time progress with credential info per device
 
-### 7. View Results
+### 8. View Results
 
 Navigate to **Output**:
 
@@ -378,7 +416,7 @@ Output saved to:
 └── ...
 ```
 
-### 8. Generate Coverage Report
+### 9. Generate Coverage Report
 
 ```bash
 python coverage_report.py
@@ -404,6 +442,24 @@ vcollector vault list                    # List credentials
 vcollector vault set-default <name>      # Set default credential
 vcollector vault export <file>           # Export encrypted backup
 vcollector vault import <file>           # Import from backup
+```
+
+### Credential Discovery
+
+```bash
+vcollector creds discover                # Test all devices against all credentials
+vcollector creds discover --site dc1    # Filter by site
+vcollector creds discover --platform arista_eos  # Filter by platform
+vcollector creds discover --credentials lab,legacy  # Specific credentials only
+vcollector creds discover --skip-configured  # Skip devices with credential_id
+vcollector creds discover --force        # Re-test even if recently tested
+vcollector creds discover --dry-run      # Preview what would be tested
+
+vcollector creds test spine-1            # Test single device
+vcollector creds test spine-1 --credential lab  # Test specific credential
+vcollector creds test spine-1 --update   # Save result to database
+
+vcollector creds status                  # Show credential coverage report
 ```
 
 ### Job Management
@@ -448,7 +504,7 @@ vcollector run --job <slug> --quiet      # Minimal output
 vcollector run --job <slug> -y           # Skip confirmation
 
 # Credentials
-vcollector run --job <slug> --credential lab  # Use specific credential
+vcollector run --job <slug> --credential lab  # Override with specific credential
 ```
 
 ### Automation
@@ -486,6 +542,7 @@ vcollector/
 ├── validate_jobs.py         # Job validation utility
 ├── cli/
 │   ├── __init__.py
+│   ├── creds.py             # Credential discovery commands
 │   ├── init.py              # Environment initialization
 │   ├── jobs.py              # Jobs command handler
 │   ├── main.py              # CLI argument parsing, GUI launch
@@ -494,23 +551,24 @@ vcollector/
 ├── core/
 │   ├── __init__.py
 │   ├── config.py            # App configuration
+│   ├── cred_discovery.py    # Credential discovery engine
 │   ├── ssh_client.py        # Low-level SSH client
 │   ├── tfsm_engine.py       # TextFSM matching engine
 │   ├── tfsm_fire.py         # TextFSM auto-matching
 │   ├── tfsm_fire_tester.py  # TextFSM development GUI
 │   └── tfsm_templates.db    # Bundled templates database
 ├── dcim/
-│   ├── db_schema.py         # Database schema initialization
+│   ├── db_schema.py         # Database schema initialization (v2 with creds)
 │   ├── dcim_repo.py         # DCIM data access layer
 │   └── jobs_repo.py         # Jobs data access layer
 ├── jobs/
 │   ├── __init__.py
 │   ├── batch.py             # Parallel job execution
-│   └── runner.py            # Single job execution
+│   └── runner.py            # Single job execution (per-device creds)
 ├── ssh/
 │   ├── __init__.py
 │   ├── client.py            # SSH client wrapper
-│   └── executor.py          # Concurrent SSH pool
+│   └── executor.py          # Concurrent SSH pool (per-device creds)
 ├── storage/
 │   └── __init__.py
 ├── ui/
@@ -520,15 +578,15 @@ vcollector/
 │   └── widgets/
 │       ├── __init__.py
 │       ├── credentials_view.py
-│       ├── device_dialogs.py
-│       ├── devices_view.py
+│       ├── device_dialogs.py    # Credential tab, test button
+│       ├── devices_view.py      # Cred status column, discovery
 │       ├── history_view.py
 │       ├── job_dialogs.py
 │       ├── jobs_view.py
 │       ├── output_view.py
 │       ├── platform_dialogs.py
 │       ├── platforms_view.py
-│       ├── run_view.py
+│       ├── run_view.py          # Per-device creds checkbox
 │       ├── site_dialogs.py
 │       ├── sites_view.py
 │       ├── stat_cards.py
@@ -599,7 +657,17 @@ logging:
 - [x] Unified config.yaml schema
 - [x] Backward compatibility with legacy JSON jobs
 
-### v0.4 — Integration (Planned)
+### v0.4 — Per-Device Credentials ✅
+- [x] Database schema v2 with credential fields
+- [x] Credential discovery engine (CLI + GUI)
+- [x] Per-device credential assignment
+- [x] Credential status column in Devices view
+- [x] Credential dropdown in Device Edit dialog
+- [x] Test button in Device dialogs
+- [x] Coverage stat card and filter
+- [x] Runner integration with per-device creds
+
+### v0.5 — Integration (Planned)
 - [ ] NetBox API sync (import devices)
 - [ ] Scheduled collection (cron-like)
 - [ ] Config diff detection
