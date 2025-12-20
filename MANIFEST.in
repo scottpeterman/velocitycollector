@@ -1,0 +1,41 @@
+# MANIFEST.in - Files to include in source distribution
+
+# Include documentation
+include README.md
+include LICENSE
+
+# Include package data
+include vcollector/core/tfsm_templates.db
+
+# Include example files
+recursive-include jobs_v2 *.md
+
+# Include helper scripts (optional - for development)
+include import_from_velocitycmdb.py
+include migrate_jobs.py
+include coverage_report.py
+
+# Exclude unnecessary files
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude __pycache__
+global-exclude *.egg-info
+global-exclude .git*
+global-exclude .DS_Store
+global-exclude *.db
+
+# Re-include the template database
+include vcollector/core/tfsm_templates.db
+
+# Exclude test and development files
+exclude test_ssh.py
+exclude db_doc.py
+exclude db_create.sql
+exclude fix_jobs.py
+exclude tfsm_coverage*.txt
+exclude tfsm_coverage_report.py
+exclude *.md
+include README.md
+
+# Exclude screenshots from package
+prune screenshots

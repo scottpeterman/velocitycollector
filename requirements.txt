@@ -1,0 +1,6 @@
+click>=8.3
+invoke>=2.2
+paramiko>=4.0
+PyQt6>=6.10
+PyYAML>=6.0
+textfsm>=2.1

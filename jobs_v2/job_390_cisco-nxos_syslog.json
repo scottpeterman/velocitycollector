@@ -1,0 +1,46 @@
+{
+  "version": "2.0",
+  "job_id": 390,
+  "capture_type": "syslog",
+  "vendor": "cisco",
+  "credentials": {
+    "source": "vault",
+    "credential_set": "default",
+    "fallback_env": "VELOCITYCMDB_VAULT_PASS"
+  },
+  "protocol": "ssh",
+  "device_filter": {
+    "source": "database",
+    "vendor": "cisco",
+    "site": null,
+    "role": null,
+    "name_pattern": null
+  },
+  "commands": {
+    "paging_disable": "terminal length 0",
+    "command": "show logging",
+    "output_directory": "syslog"
+  },
+  "validation": {
+    "use_tfsm": false,
+    "min_score": 1,
+    "store_failures": true,
+    "skip": true
+  },
+  "execution": {
+    "max_workers": 12,
+    "timeout": 60,
+    "inter_command_time": 1
+  },
+  "storage": {
+    "base_path": "~/.vcollector/collections",
+    "filename_pattern": "{device_name}.txt"
+  },
+  "legacy_v1": {
+    "migrated_from": "job_390_cisco-nxos_syslog.json",
+    "migration_date": "2025-12-15",
+    "original_command_text": "terminal length 0,show logging",
+    "original_session_file": "sessions.yaml",
+    "original_vendor_selected": "Cisco NX-OS"
+  }
+}

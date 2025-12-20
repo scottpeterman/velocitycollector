@@ -1,0 +1,3 @@
+vcollector run --jobs "jobs_v2/*cisco-ios*.json" -y
+
+ python -m vcollector run --jobs jobs_v2/job_300_arista_arp.json

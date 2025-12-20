@@ -1,0 +1,49 @@
+{
+  "version": "2.0",
+  "job_id": 301,
+  "capture_type": "arp",
+  "vendor": "cisco",
+  "credentials": {
+    "source": "vault",
+    "credential_set": "default",
+    "fallback_env": "VELOCITYCMDB_VAULT_PASS"
+  },
+  "protocol": "ssh",
+  "device_filter": {
+    "source": "database",
+    "vendor": "cisco",
+    "site": null,
+    "role": null,
+    "name_pattern": null
+  },
+
+  "validation": {
+    "use_tfsm": true,
+    "tfsm_filter": "arp",
+    "min_score": 1,
+    "store_failures": true
+},
+  "commands": {
+    "paging_disable": "terminal length 0",
+    "command": "show ip arp,,",
+    "output_directory": "arp"
+},
+"storage": {
+    "base_path": "~/.vcollector/collections",
+    "filename_pattern": "{device_name}.txt"
+},
+  "execution": {
+    "max_workers": 12,
+    "timeout": 60,
+    "inter_command_time": 1
+  },
+
+
+  "legacy_v1": {
+    "migrated_from": "job_301_cisco-ios_arp.json",
+    "migration_date": "2025-12-15",
+    "original_command_text": "terminal length 0,show ip arp,,",
+    "original_session_file": "sessions.yaml",
+    "original_vendor_selected": "Cisco IOS"
+  }
+}
