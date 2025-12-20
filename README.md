@@ -625,7 +625,7 @@ Contributions welcome. Areas of interest:
 
 ## License
 
-MIT License - See LICENSE file
+GPLv3 License - See LICENSE file
 
 ## Author
 
