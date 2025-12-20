@@ -1,6 +1,8 @@
 """
 Job Runner - Single job execution with validation.
 
+Path: vcollector/jobs/runner.py
+
 Executes collection jobs against network devices, validates output
 using TextFSM templates, and only saves valid (score > 0) output.
 
@@ -8,6 +10,7 @@ Supports loading jobs from:
 - JSON files (legacy/backward compatible)
 - Database (jobs table in collector.db)
 
+Supports per-device credentials via credential_resolver parameter.
 Enhanced with comprehensive error trapping and logging.
 """
 
@@ -23,6 +26,7 @@ from typing import Optional, List, Dict, Any, Callable, Union
 
 from vcollector.core.config import get_config
 from vcollector.vault.models import SSHCredentials
+from vcollector.vault.resolver import CredentialResolver
 from vcollector.ssh.executor import (
     SSHExecutorPool,
     ExecutorOptions,
@@ -172,12 +176,13 @@ class JobRunner:
         quiet: bool = False,
         record_history: bool = True,
         capture_traceback: bool = True,  # NEW: Capture full tracebacks
+        credential_resolver: Optional[CredentialResolver] = None,  # For per-device credentials
     ):
         """
         Initialize job runner.
 
         Args:
-            credentials: SSH credentials from vault.
+            credentials: SSH credentials from vault (default/fallback).
             validate: Enable TextFSM validation (default: True).
             tfsm_db_path: Path to TextFSM templates database.
             debug: Enable debug output.
@@ -187,6 +192,7 @@ class JobRunner:
             quiet: Minimal output.
             record_history: Record execution in job_history table.
             capture_traceback: Capture full tracebacks for errors.
+            credential_resolver: Unlocked resolver for per-device credential lookup.
         """
         self.credentials = credentials
         self.validate = validate
@@ -198,11 +204,13 @@ class JobRunner:
         self.quiet = quiet
         self.record_history = record_history
         self.capture_traceback = capture_traceback
+        self.credential_resolver = credential_resolver
 
         self.config = get_config()
         self._validation_engine = None
         self._jobs_repo = None
         self._dcim_repo = None
+        self._credential_cache: Dict[int, SSHCredentials] = {}  # Cache for per-device creds
 
         # Configure logging based on debug flag
         if debug:
@@ -259,6 +267,51 @@ class JobRunner:
                 logger.error(f"Failed to load DCIM repository: {e}", exc_info=self.debug)
                 raise
         return self._dcim_repo
+
+    def _get_device_credentials(self, device: Dict[str, Any]) -> Optional[SSHCredentials]:
+        """
+        Get credentials for a specific device.
+
+        Uses per-device credential_id if set, otherwise returns None
+        to fall back to job/default credentials.
+
+        Args:
+            device: Device dict with 'credential_id' key
+
+        Returns:
+            SSHCredentials if device has specific credential, None otherwise
+        """
+        if not self.credential_resolver:
+            return None
+
+        credential_id = device.get('credential_id')
+        if not credential_id:
+            return None
+
+        # Check cache first
+        if credential_id in self._credential_cache:
+            return self._credential_cache[credential_id]
+
+        # Build cache from all credentials if not yet done
+        if not self._credential_cache:
+            try:
+                all_creds = self.credential_resolver.list_credentials()
+                for cred in all_creds:
+                    ssh_creds = self.credential_resolver.get_ssh_credentials(credential_name=cred.name)
+                    if ssh_creds:
+                        self._credential_cache[cred.id] = ssh_creds
+                logger.debug(f"Loaded {len(self._credential_cache)} credentials into cache")
+            except Exception as e:
+                logger.warning(f"Failed to load credentials: {e}")
+                return None
+
+        # Look up from cache
+        if credential_id in self._credential_cache:
+            device_name = device.get('name', device.get('primary_ip4', '?'))
+            logger.debug(f"{device_name}: Using credential_id={credential_id}")
+            return self._credential_cache[credential_id]
+
+        return None
 
     def run(
         self,
@@ -508,11 +561,17 @@ class JobRunner:
             command_string = ','.join(command_parts)
             logger.debug(f"[{job_id}] Command string: {command_string}")
 
-            # Build execution targets
-            targets = [
-                (d['primary_ip4'], command_string, d)
-                for d in devices
-            ]
+            # Build execution targets with per-device credentials
+            targets = []
+            for d in devices:
+                extra_data = dict(d)  # Copy device data
+
+                # Add per-device credentials if available
+                device_creds = self._get_device_credentials(d)
+                if device_creds:
+                    extra_data['credentials'] = device_creds
+
+                targets.append((d['primary_ip4'], command_string, extra_data))
 
             # Execute SSH commands
             exec_config = job_dict.get('execution', {})

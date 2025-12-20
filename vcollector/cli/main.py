@@ -60,6 +60,7 @@ Commands:
   vault       Manage encrypted credential vault
   run         Execute collection jobs
   jobs        Manage job definitions
+  creds       Credential discovery and testing
 
 Examples:
   # Launch GUI
@@ -83,6 +84,12 @@ Examples:
   vcollector jobs list --vendor arista         # Filter by vendor
   vcollector jobs show arista-arp              # Show job details
   vcollector jobs history --limit 10           # Recent runs
+
+  # Credential discovery
+  vcollector creds discover                    # Test all devices
+  vcollector creds discover --site dc1         # Filter by site
+  vcollector creds test spine-1                # Test single device
+  vcollector creds status                      # Coverage report
 
 Use 'vcollector <command> --help' for more information on a command.
 """,
@@ -134,6 +141,14 @@ Use 'vcollector <command> --help' for more information on a command.
     )
     _setup_jobs_parser(jobs_parser)
 
+    # Creds subcommand
+    creds_parser = subparsers.add_parser(
+        "creds",
+        help="Credential discovery and testing",
+        description="Discover and test SSH credentials for devices",
+    )
+    _setup_creds_parser(creds_parser)
+
     # Parse args
     args = parser.parse_args()
 
@@ -160,6 +175,10 @@ Use 'vcollector <command> --help' for more information on a command.
         from vcollector.cli.jobs import handle_jobs
 
         return handle_jobs(args)
+    elif args.command == "creds":
+        from vcollector.cli.creds import handle_creds
+
+        return handle_creds(args)
     else:
         parser.print_help()
         return 1
@@ -414,6 +433,128 @@ def _setup_jobs_parser(parser: argparse.ArgumentParser):
         "--dry-run",
         action="store_true",
         help="Show what would be migrated"
+    )
+
+
+def _setup_creds_parser(parser: argparse.ArgumentParser):
+    """Set up creds subcommand parser."""
+    subparsers = parser.add_subparsers(dest="creds_command", metavar="<action>")
+
+    # creds discover
+    discover_parser = subparsers.add_parser(
+        "discover",
+        help="Bulk credential discovery for devices",
+    )
+    discover_parser.add_argument(
+        "--site", "-s",
+        help="Filter by site name/slug",
+    )
+    discover_parser.add_argument(
+        "--platform", "-p",
+        help="Filter by platform slug",
+    )
+    discover_parser.add_argument(
+        "--role", "-r",
+        help="Filter by role slug",
+    )
+    discover_parser.add_argument(
+        "--status",
+        default="active",
+        help="Device status filter (default: active)",
+    )
+    discover_parser.add_argument(
+        "--search",
+        help="Search in device name/IP",
+    )
+    discover_parser.add_argument(
+        "--credentials", "-c",
+        help="Comma-separated credential names to test (default: all)",
+    )
+    discover_parser.add_argument(
+        "--workers", "-w",
+        type=int,
+        default=8,
+        help="Max concurrent connections (default: 8)",
+    )
+    discover_parser.add_argument(
+        "--timeout", "-t",
+        type=int,
+        default=15,
+        help="SSH connection timeout in seconds (default: 15)",
+    )
+    discover_parser.add_argument(
+        "--limit", "-n",
+        type=int,
+        help="Limit number of devices to test",
+    )
+    discover_parser.add_argument(
+        "--skip-configured",
+        action="store_true",
+        help="Skip devices that already have credential_id set",
+    )
+    discover_parser.add_argument(
+        "--force", "-f",
+        action="store_true",
+        help="Test even recently-tested devices",
+    )
+    discover_parser.add_argument(
+        "--no-update",
+        action="store_true",
+        help="Don't update device credential_id on success",
+    )
+    discover_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would be tested without testing",
+    )
+    discover_parser.add_argument(
+        "--yes", "-y",
+        action="store_true",
+        help="Skip confirmation prompt",
+    )
+    discover_parser.add_argument(
+        "--quiet", "-q",
+        action="store_true",
+        help="Minimal output",
+    )
+    discover_parser.add_argument(
+        "--vault-pass",
+        help="Vault password (or set VCOLLECTOR_VAULT_PASS)",
+    )
+
+    # creds test
+    test_parser = subparsers.add_parser(
+        "test",
+        help="Test credentials for a single device",
+    )
+    test_parser.add_argument(
+        "device",
+        help="Device name or IP address",
+    )
+    test_parser.add_argument(
+        "--credential", "-c",
+        help="Specific credential to test (default: try all)",
+    )
+    test_parser.add_argument(
+        "--timeout", "-t",
+        type=int,
+        default=15,
+        help="SSH timeout in seconds (default: 15)",
+    )
+    test_parser.add_argument(
+        "--update", "-u",
+        action="store_true",
+        help="Update device credential_id on success",
+    )
+    test_parser.add_argument(
+        "--vault-pass",
+        help="Vault password (or set VCOLLECTOR_VAULT_PASS)",
+    )
+
+    # creds status
+    subparsers.add_parser(
+        "status",
+        help="Show credential coverage report",
     )
 
 

@@ -2,7 +2,8 @@
 VelocityCollector Run View
 
 Job execution view for running collection jobs from the GUI.
-Provides job selection, execution control, and real-time progress display.
+Provides job selection, execution control, real-time progress display,
+and per-device credential support.
 """
 
 from PyQt6.QtWidgets import (
@@ -31,10 +32,11 @@ class DeviceProgress:
     success: bool
     duration_ms: float
     error: Optional[str] = None
+    credential_name: Optional[str] = None  # NEW: Which credential was used
 
 
 class JobExecutionThread(QThread):
-    """Background thread for job execution."""
+    """Background thread for job execution with per-device credential support."""
 
     # Signals
     progress = pyqtSignal(int, int, object)  # completed, total, DeviceProgress
@@ -67,17 +69,28 @@ class JobExecutionThread(QThread):
                 return
 
             try:
-                # Get credentials
+                # Get default credentials
                 creds = resolver.get_ssh_credentials()
                 if not creds:
                     self.error.emit("No credentials in vault")
                     return
 
-                self.log_message.emit(f"Using credentials: {creds.username}")
+                self.log_message.emit(f"Default credential: {creds.username}")
 
-                # Create runner
+                # Build credential resolver for per-device creds
+                credential_resolver = None
+                use_per_device_creds = self.options.get('use_per_device_creds', True)
+
+                if use_per_device_creds:
+                    self.log_message.emit("Per-device credentials: ENABLED")
+                    credential_resolver = resolver
+                else:
+                    self.log_message.emit("Per-device credentials: DISABLED (using default)")
+
+                # Create runner with per-device credential support
                 runner = JobRunner(
                     credentials=creds,
+                    credential_resolver=credential_resolver,  # NEW: Pass resolver
                     validate=self.options.get('validate', True),
                     debug=self.options.get('debug', False),
                     no_save=self.options.get('no_save', False),
@@ -97,6 +110,7 @@ class JobExecutionThread(QThread):
                         success=result.success if hasattr(result, 'success') else True,
                         duration_ms=result.duration_ms if hasattr(result, 'duration_ms') else 0,
                         error=result.error if hasattr(result, 'error') else None,
+                        credential_name=result.credential_name if hasattr(result, 'credential_name') else None,
                     )
                     self.progress.emit(completed, total, progress)
 
@@ -119,7 +133,7 @@ class JobExecutionThread(QThread):
 
 
 class RunView(QWidget):
-    """Job execution view with scrollable content."""
+    """Job execution view with scrollable content and per-device credential support."""
 
     def __init__(self, repo: Optional[JobsRepository] = None, parent=None):
         super().__init__(parent)
@@ -203,6 +217,15 @@ class RunView(QWidget):
         self.force_save_check.setChecked(False)
         options_layout.addRow("", self.force_save_check)
 
+        # NEW: Per-device credentials option
+        self.per_device_creds_check = QCheckBox("Use per-device credentials")
+        self.per_device_creds_check.setChecked(True)
+        self.per_device_creds_check.setToolTip(
+            "When enabled, devices with assigned credentials will use\n"
+            "their specific credential instead of the job default."
+        )
+        options_layout.addRow("", self.per_device_creds_check)
+
         self.debug_check = QCheckBox("Debug output")
         self.debug_check.setChecked(False)
         options_layout.addRow("", self.debug_check)
@@ -219,6 +242,11 @@ class RunView(QWidget):
 
         self.vault_status_label = QLabel("")
         creds_layout.addWidget(self.vault_status_label)
+
+        # NEW: Credential coverage indicator
+        self.cred_coverage_label = QLabel("")
+        self.cred_coverage_label.setStyleSheet("color: #888;")
+        creds_layout.addWidget(self.cred_coverage_label)
 
         top_layout.addWidget(creds_group)
 
@@ -241,10 +269,10 @@ class RunView(QWidget):
         self.progress_bar.setValue(0)
         progress_layout.addWidget(self.progress_bar)
 
-        # Results table
+        # Results table - now with 5 columns including Credential
         self.results_table = QTableWidget()
-        self.results_table.setColumnCount(4)
-        self.results_table.setHorizontalHeaderLabels(["Device", "Host", "Status", "Duration"])
+        self.results_table.setColumnCount(5)
+        self.results_table.setHorizontalHeaderLabels(["Device", "Host", "Credential", "Status", "Duration"])
         self.results_table.setAlternatingRowColors(True)
         self.results_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.results_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -335,7 +363,7 @@ class RunView(QWidget):
         self._on_job_selected(0)
 
     def _check_vault_status(self):
-        """Check if vault is initialized."""
+        """Check if vault is initialized and show credential coverage."""
         try:
             resolver = CredentialResolver()
             if resolver.is_initialized():
@@ -351,12 +379,55 @@ class RunView(QWidget):
                 else:
                     self.creds_status.setText("No credentials")
                     self.creds_status.setStyleSheet("color: #e74c3c;")
+
+                # Show credential coverage
+                self._update_credential_coverage()
             else:
                 self.creds_status.setText("Vault not initialized")
                 self.creds_status.setStyleSheet("color: #e74c3c;")
         except Exception as e:
             self.creds_status.setText(f"Error: {e}")
             self.creds_status.setStyleSheet("color: #e74c3c;")
+
+    def _update_credential_coverage(self):
+        """Update credential coverage display."""
+        try:
+            from vcollector.dcim.dcim_repo import DCIMRepository
+            repo = DCIMRepository()
+            stats = repo.get_credential_coverage_stats()
+            repo.close()
+
+            total = stats.get('total_active', 0)
+            success = stats.get('test_success', 0)
+            failed = stats.get('test_failed', 0)
+            untested = stats.get('test_untested', 0)
+
+            if total > 0:
+                coverage = (success / total) * 100
+                self.cred_coverage_label.setText(
+                    f"Coverage: {coverage:.0f}% ({success}/{total} tested OK)"
+                )
+
+                # Color based on coverage
+                if coverage >= 90:
+                    self.cred_coverage_label.setStyleSheet("color: #2ecc71;")
+                elif coverage >= 50:
+                    self.cred_coverage_label.setStyleSheet("color: #f39c12;")
+                else:
+                    self.cred_coverage_label.setStyleSheet("color: #e74c3c;")
+
+                # Show warning if many devices lack credentials
+                if failed > 0 or untested > total * 0.5:
+                    self.vault_status_label.setText(
+                        f"⚠ {failed} failed, {untested} untested"
+                    )
+                    self.vault_status_label.setStyleSheet("color: #f39c12;")
+            else:
+                self.cred_coverage_label.setText("No active devices")
+
+        except Exception as e:
+            self.cred_coverage_label.setText(f"Coverage: unknown")
+            self.cred_coverage_label.setStyleSheet("color: #888;")
 
     def _on_job_selected(self, index: int):
         """Handle job selection change."""
@@ -396,6 +467,7 @@ class RunView(QWidget):
             'force_save': self.force_save_check.isChecked(),
             'debug': self.debug_check.isChecked(),
             'limit': self.limit_spin.value() if self.limit_spin.value() > 0 else None,
+            'use_per_device_creds': self.per_device_creds_check.isChecked(),  # NEW
         }
 
         # Clear previous results
@@ -422,6 +494,8 @@ class RunView(QWidget):
         self._elapsed_timer.start(1000)
 
         self._append_log(f"Starting job: {self.job_combo.currentText()}")
+        if options['use_per_device_creds']:
+            self._append_log("Per-device credentials enabled")
         self._execution_thread.start()
 
     def _on_cancel_clicked(self):
@@ -443,13 +517,24 @@ class RunView(QWidget):
         self.results_table.setItem(row, 0, QTableWidgetItem(device.device_name))
         self.results_table.setItem(row, 1, QTableWidgetItem(device.host))
 
+        # Credential column (NEW)
+        cred_text = device.credential_name or "default"
+        cred_item = QTableWidgetItem(cred_text)
+        if device.credential_name:
+            cred_item.setForeground(QColor('#3498db'))  # Blue for per-device
+        else:
+            cred_item.setForeground(QColor('#888'))  # Gray for default
+        self.results_table.setItem(row, 2, cred_item)
+
+        # Status
         status = "✓" if device.success else "✗"
         status_item = QTableWidgetItem(status)
         status_item.setForeground(QColor('#2ecc71' if device.success else '#e74c3c'))
-        self.results_table.setItem(row, 2, status_item)
+        self.results_table.setItem(row, 3, status_item)
 
+        # Duration
         duration = f"{device.duration_ms:.0f}ms" if device.duration_ms else "—"
-        self.results_table.setItem(row, 3, QTableWidgetItem(duration))
+        self.results_table.setItem(row, 4, QTableWidgetItem(duration))
 
         # Scroll to bottom
         self.results_table.scrollToBottom()
@@ -479,6 +564,9 @@ class RunView(QWidget):
 
         if result.saved_files:
             self._append_log(f"\nSaved {len(result.saved_files)} files")
+
+        # Refresh credential coverage after job
+        self._update_credential_coverage()
 
     def _on_error(self, message: str):
         """Handle execution error."""

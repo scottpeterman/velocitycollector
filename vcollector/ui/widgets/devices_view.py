@@ -2,23 +2,89 @@
 VelocityCollector Devices View
 
 Device inventory view with live data from VelocityCollector DCIM database.
-Provides search, filtering, and device management operations.
+Provides search, filtering, credential status display, and device management operations.
 """
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QLabel,
     QTableWidget, QTableWidgetItem, QComboBox, QHeaderView, QAbstractItemView,
-    QMenu, QMessageBox, QDialog
+    QMenu, QMessageBox, QDialog, QProgressDialog
 )
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QThread
 from PyQt6.QtGui import QAction, QColor, QShortcut, QKeySequence
 
-from vcollector.dcim.dcim_repo import DCIMRepository,Device
+from vcollector.dcim.dcim_repo import DCIMRepository, Device
 from vcollector.ui.widgets.stat_cards import StatCard
 from vcollector.ui.widgets.device_dialogs import DeviceDetailDialog, DeviceEditDialog
 
 from typing import Optional, List
 from datetime import datetime
+
+
+class CredentialDiscoveryThread(QThread):
+    """Background thread for credential discovery."""
+
+    progress = pyqtSignal(int, int, object)  # completed, total, result
+    finished_discovery = pyqtSignal(object)  # DiscoveryResult
+    error = pyqtSignal(str)
+
+    def __init__(self, devices: List[Device], vault_password: str, options: dict):
+        super().__init__()
+        self.devices = devices
+        self.vault_password = vault_password
+        self.options = options
+        self._cancelled = False
+
+    def run(self):
+        try:
+            from vcollector.core.cred_discovery import CredentialDiscovery
+            from vcollector.vault.resolver import CredentialResolver
+            from vcollector.dcim.dcim_repo import DCIMRepository
+
+            # Unlock vault
+            resolver = CredentialResolver()
+            if not resolver.is_initialized():
+                self.error.emit("Vault not initialized")
+                return
+
+            if not resolver.unlock_vault(self.vault_password):
+                self.error.emit("Invalid vault password")
+                return
+
+            try:
+                dcim_repo = DCIMRepository()
+                discovery = CredentialDiscovery(
+                    resolver=resolver,
+                    dcim_repo=dcim_repo,
+                    timeout=self.options.get('timeout', 15),
+                    max_workers=self.options.get('max_workers', 8),
+                )
+
+                def on_progress(completed, total, result):
+                    if not self._cancelled:
+                        self.progress.emit(completed, total, result)
+
+                result = discovery.discover(
+                    devices=self.devices,
+                    credential_names=self.options.get('credential_names'),
+                    skip_configured=self.options.get('skip_configured', False),
+                    skip_recently_tested=self.options.get('skip_recently_tested', True),
+                    update_devices=True,
+                    progress_callback=on_progress,
+                )
+
+                if not self._cancelled:
+                    self.finished_discovery.emit(result)
+
+            finally:
+                resolver.lock_vault()
+
+        except Exception as e:
+            import traceback
+            self.error.emit(f"{e}\n{traceback.format_exc()}")
+
+    def cancel(self):
+        self._cancelled = True
 
 
 class DevicesView(QWidget):
@@ -35,6 +101,7 @@ class DevicesView(QWidget):
         self._search_timer = QTimer()
         self._search_timer.setSingleShot(True)
         self._search_timer.timeout.connect(self._do_search)
+        self._discovery_thread: Optional[CredentialDiscoveryThread] = None
 
         self.init_ui()
         self.init_shortcuts()
@@ -58,6 +125,12 @@ class DevicesView(QWidget):
         add_btn.clicked.connect(self._on_add_device)
         header_layout.addWidget(add_btn)
 
+        # Discover Credentials button
+        discover_btn = QPushButton("🔑 Discover Creds")
+        discover_btn.setToolTip("Test credentials against selected or all devices")
+        discover_btn.clicked.connect(self._on_discover_credentials)
+        header_layout.addWidget(discover_btn)
+
         refresh_btn = QPushButton("Refresh")
         refresh_btn.setProperty("secondary", True)
         refresh_btn.clicked.connect(self.refresh_data)
@@ -75,11 +148,11 @@ class DevicesView(QWidget):
         self.active_devices = StatCard("Active", "0")
         stats_layout.addWidget(self.active_devices)
 
+        self.cred_coverage = StatCard("Cred Coverage", "0%")
+        stats_layout.addWidget(self.cred_coverage)
+
         self.sites_count = StatCard("Sites", "0")
         stats_layout.addWidget(self.sites_count)
-
-        self.manufacturers_count = StatCard("Manufacturers", "0")
-        stats_layout.addWidget(self.manufacturers_count)
 
         self.platforms_count = StatCard("Platforms", "0")
         stats_layout.addWidget(self.platforms_count)
@@ -115,6 +188,15 @@ class DevicesView(QWidget):
         self.status_filter.currentIndexChanged.connect(self._on_filter_changed)
         filter_layout.addWidget(self.status_filter)
 
+        # Credential status filter
+        self.cred_filter = QComboBox()
+        self.cred_filter.addItems([
+            "All Creds", "✓ Success", "✗ Failed", "? Untested", "No Cred"
+        ])
+        self.cred_filter.setToolTip("Filter by credential test status")
+        self.cred_filter.currentIndexChanged.connect(self._on_filter_changed)
+        filter_layout.addWidget(self.cred_filter)
+
         clear_btn = QPushButton("Clear")
         clear_btn.setProperty("secondary", True)
         clear_btn.clicked.connect(self._clear_filters)
@@ -122,16 +204,16 @@ class DevicesView(QWidget):
 
         layout.addLayout(filter_layout)
 
-        # Device table
+        # Device table - now with 9 columns including Cred Status
         self.device_table = QTableWidget()
-        self.device_table.setColumnCount(8)
+        self.device_table.setColumnCount(9)
         self.device_table.setHorizontalHeaderLabels([
             "Name", "IP Address", "Site", "Manufacturer", "Platform",
-            "Role", "Status", "Last Collected"
+            "Role", "Status", "Cred Status", "Last Collected"
         ])
         self.device_table.setAlternatingRowColors(True)
         self.device_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.device_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.device_table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)  # Multi-select
         self.device_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.device_table.horizontalHeader().setStretchLastSection(True)
         self.device_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -171,6 +253,9 @@ class DevicesView(QWidget):
         # F5 - Refresh
         QShortcut(QKeySequence("F5"), self, self.refresh_data)
 
+        # Ctrl+D - Discover credentials for selected
+        QShortcut(QKeySequence("Ctrl+D"), self, self._on_discover_credentials)
+
     def load_filters(self):
         """Load filter dropdown options from database."""
         # Sites
@@ -200,8 +285,25 @@ class DevicesView(QWidget):
             self.total_devices.set_value(str(stats.get('total_devices', 0)))
             self.active_devices.set_value(str(stats.get('active_devices', 0)))
             self.sites_count.set_value(str(stats.get('total_sites', 0)))
-            self.manufacturers_count.set_value(str(stats.get('total_manufacturers', 0)))
             self.platforms_count.set_value(str(stats.get('total_platforms', 0)))
+
+            # Credential coverage stats
+            cred_stats = self.repo.get_credential_coverage_stats()
+            total = cred_stats.get('total_active', 0)
+            success = cred_stats.get('test_success', 0)
+            if total > 0:
+                coverage = (success / total) * 100
+                self.cred_coverage.set_value(f"{coverage:.0f}%")
+                # Color code based on coverage
+                if coverage >= 90:
+                    self.cred_coverage.setStyleSheet("QLabel { color: #2ecc71; }")
+                elif coverage >= 50:
+                    self.cred_coverage.setStyleSheet("QLabel { color: #f39c12; }")
+                else:
+                    self.cred_coverage.setStyleSheet("QLabel { color: #e74c3c; }")
+            else:
+                self.cred_coverage.set_value("—")
+
         except Exception as e:
             self.status_label.setText(f"Error loading stats: {e}")
 
@@ -238,6 +340,19 @@ class DevicesView(QWidget):
                     if d.manufacturer_slug == mfg_slug
                 ]
 
+            # Apply credential filter in memory
+            cred_filter_idx = self.cred_filter.currentIndex()
+            if cred_filter_idx > 0:
+                if cred_filter_idx == 1:  # Success
+                    self._devices = [d for d in self._devices if d.credential_test_result == 'success']
+                elif cred_filter_idx == 2:  # Failed
+                    self._devices = [d for d in self._devices if d.credential_test_result == 'failed']
+                elif cred_filter_idx == 3:  # Untested
+                    self._devices = [d for d in self._devices
+                                    if d.credential_test_result in (None, 'untested', '')]
+                elif cred_filter_idx == 4:  # No Cred
+                    self._devices = [d for d in self._devices if d.credential_id is None]
+
             self._populate_table()
             self.status_label.setText(f"Showing {len(self._devices)} devices")
 
@@ -270,11 +385,41 @@ class DevicesView(QWidget):
                 status_item.setForeground(status_color)
             self.device_table.setItem(row, 6, status_item)
 
+            # Credential status with color coding
+            cred_status = self._format_cred_status(device)
+            cred_item = QTableWidgetItem(cred_status)
+            cred_color = self._get_cred_status_color(device.credential_test_result)
+            if cred_color:
+                cred_item.setForeground(cred_color)
+            # Store credential info for tooltip
+            if device.credential_tested_at:
+                cred_item.setToolTip(f"Last tested: {device.credential_tested_at}")
+            self.device_table.setItem(row, 7, cred_item)
+
             # Last collected - friendly format
             last_collected = self._format_relative_time(device.last_collected_at)
-            self.device_table.setItem(row, 7, QTableWidgetItem(last_collected))
+            self.device_table.setItem(row, 8, QTableWidgetItem(last_collected))
 
         self.device_table.setSortingEnabled(True)
+
+    def _format_cred_status(self, device: Device) -> str:
+        """Format credential status for display."""
+        if device.credential_test_result == 'success':
+            return "✓ OK"
+        elif device.credential_test_result == 'failed':
+            return "✗ Failed"
+        elif device.credential_id:
+            return "? Assigned"
+        else:
+            return "—"
+
+    def _get_cred_status_color(self, test_result: Optional[str]) -> Optional[QColor]:
+        """Get color for credential test status."""
+        colors = {
+            'success': QColor('#2ecc71'),   # Green
+            'failed': QColor('#e74c3c'),    # Red
+        }
+        return colors.get(test_result)
 
     def _get_status_color(self, status: Optional[str]) -> Optional[QColor]:
         """Get color for device status."""
@@ -338,6 +483,7 @@ class DevicesView(QWidget):
         self.site_filter.setCurrentIndex(0)
         self.manufacturer_filter.setCurrentIndex(0)
         self.status_filter.setCurrentIndex(0)
+        self.cred_filter.setCurrentIndex(0)
         self._load_devices()
 
     def _on_selection_changed(self):
@@ -383,6 +529,26 @@ class DevicesView(QWidget):
         edit_action = QAction("Edit Device", self)
         edit_action.triggered.connect(lambda: self._edit_device(device_id))
         menu.addAction(edit_action)
+
+        menu.addSeparator()
+
+        # Credential actions
+        cred_menu = menu.addMenu("Credentials")
+
+        test_cred_action = QAction("Test Credential", self)
+        test_cred_action.triggered.connect(lambda: self._test_device_credential(device))
+        cred_menu.addAction(test_cred_action)
+
+        discover_cred_action = QAction("Discover Credential", self)
+        discover_cred_action.triggered.connect(lambda: self._discover_single_device_credential(device))
+        cred_menu.addAction(discover_cred_action)
+
+        # Selected devices discovery
+        selected_rows = set(item.row() for item in self.device_table.selectedItems())
+        if len(selected_rows) > 1:
+            discover_selected_action = QAction(f"Discover Selected ({len(selected_rows)})", self)
+            discover_selected_action.triggered.connect(self._on_discover_credentials)
+            cred_menu.addAction(discover_selected_action)
 
         menu.addSeparator()
 
@@ -432,6 +598,17 @@ class DevicesView(QWidget):
                 return device
         return None
 
+    def _get_selected_devices(self) -> List[Device]:
+        """Get all selected devices."""
+        selected_rows = set(item.row() for item in self.device_table.selectedItems())
+        devices = []
+        for row in selected_rows:
+            device_id = self.device_table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+            device = self._get_device_by_id(device_id)
+            if device:
+                devices.append(device)
+        return devices
+
     def _on_add_device(self):
         """Open dialog to create a new device."""
         dialog = DeviceEditDialog(self.repo, device=None, parent=self)
@@ -442,7 +619,7 @@ class DevicesView(QWidget):
         """Show device detail dialog."""
         device = self.repo.get_device(device_id=device_id)
         if device:
-            dialog = DeviceDetailDialog(device, self)
+            dialog = DeviceDetailDialog(device, self.repo, self)
             dialog.edit_requested.connect(self._edit_device)
             dialog.exec()
 
@@ -513,6 +690,126 @@ class DevicesView(QWidget):
             self.status_label.setText(f"Status updated to {status}")
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to update status: {e}")
+
+    def _test_device_credential(self, device: Device):
+        """Test the assigned credential for a single device."""
+        if not device.credential_id:
+            QMessageBox.information(
+                self, "No Credential",
+                f"Device '{device.name}' has no assigned credential.\n"
+                "Use 'Discover Credential' to find a working credential."
+            )
+            return
+
+        # Run discovery for just this device (will test assigned credential first)
+        self._discover_single_device_credential(device)
+
+    def _discover_single_device_credential(self, device: Device):
+        """Discover working credential for a single device."""
+        self._run_credential_discovery([device])
+
+    def _on_discover_credentials(self):
+        """Discover credentials for selected devices (or all if none selected)."""
+        selected_devices = self._get_selected_devices()
+
+        if not selected_devices:
+            # Prompt to discover all
+            reply = QMessageBox.question(
+                self,
+                "Discover Credentials",
+                "No devices selected. Discover credentials for all active devices?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            if reply != QMessageBox.StandardButton.Yes:
+                return
+
+            # Get all active devices
+            selected_devices = self.repo.get_devices(status='active')
+
+        self._run_credential_discovery(selected_devices)
+
+    def _run_credential_discovery(self, devices: List[Device]):
+        """Run credential discovery in background thread."""
+        if self._discovery_thread and self._discovery_thread.isRunning():
+            QMessageBox.warning(
+                self, "Discovery Running",
+                "A credential discovery is already in progress."
+            )
+            return
+
+        # Get vault password
+        from PyQt6.QtWidgets import QInputDialog, QLineEdit
+        password, ok = QInputDialog.getText(
+            self, "Vault Password",
+            f"Enter vault password to test {len(devices)} device(s):",
+            QLineEdit.EchoMode.Password
+        )
+
+        if not ok or not password:
+            return
+
+        # Create progress dialog
+        self._progress = QProgressDialog(
+            f"Testing credentials on {len(devices)} devices...",
+            "Cancel", 0, len(devices), self
+        )
+        self._progress.setWindowModality(Qt.WindowModality.WindowModal)
+        self._progress.setAutoClose(True)
+        self._progress.setAutoReset(False)
+
+        # Start discovery thread
+        self._discovery_thread = CredentialDiscoveryThread(
+            devices=devices,
+            vault_password=password,
+            options={
+                'skip_configured': False,
+                'skip_recently_tested': False,
+                'timeout': 15,
+                'max_workers': 8,
+            }
+        )
+
+        self._discovery_thread.progress.connect(self._on_discovery_progress)
+        self._discovery_thread.finished_discovery.connect(self._on_discovery_finished)
+        self._discovery_thread.error.connect(self._on_discovery_error)
+        self._progress.canceled.connect(self._on_discovery_cancel)
+
+        self._discovery_thread.start()
+
+    def _on_discovery_progress(self, completed: int, total: int, result):
+        """Handle discovery progress update."""
+        self._progress.setValue(completed)
+        status = "✓" if result.success else "✗"
+        self._progress.setLabelText(
+            f"[{completed}/{total}] {result.device_name}: {status}"
+        )
+
+    def _on_discovery_finished(self, result):
+        """Handle discovery completion."""
+        self._progress.close()
+        self.refresh_data()
+
+        QMessageBox.information(
+            self,
+            "Discovery Complete",
+            f"Credential Discovery Results:\n\n"
+            f"  Devices tested: {result.total_devices}\n"
+            f"  Matched: {result.matched_count}\n"
+            f"  No match: {result.no_match_count}\n"
+            f"  Skipped: {result.skipped_count}\n"
+            f"  Duration: {result.duration_seconds:.1f}s"
+        )
+
+    def _on_discovery_error(self, message: str):
+        """Handle discovery error."""
+        self._progress.close()
+        QMessageBox.critical(self, "Discovery Error", message)
+
+    def _on_discovery_cancel(self):
+        """Handle discovery cancellation."""
+        if self._discovery_thread:
+            self._discovery_thread.cancel()
 
     def get_selected_device(self) -> Optional[Device]:
         """Get currently selected device."""

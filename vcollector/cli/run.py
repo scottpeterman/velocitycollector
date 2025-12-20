@@ -1,9 +1,12 @@
 """
 Run CLI handler - Refactored for database-first architecture.
 
+Path: vcollector/cli/run.py
+
 Handles: vcollector run [options]
 
 Executes collection jobs against network devices with validation.
+Supports per-device credentials via credential discovery.
 
 Job sources (in order of precedence):
 1. Database job by slug: --job arista-arp
@@ -133,10 +136,10 @@ def handle_run(args) -> int:
 
         # Execute job(s)
         if len(loaded_jobs) == 1:
-            result = _run_single_job(loaded_jobs[0], creds, args)
+            result = _run_single_job(loaded_jobs[0], creds, resolver, args)
             return 0 if result.success else 1
         else:
-            result = _run_batch_jobs(loaded_jobs, creds, args)
+            result = _run_batch_jobs(loaded_jobs, creds, resolver, args)
             return 0 if result.success else 1
 
     finally:
@@ -390,7 +393,7 @@ def _get_devices_for_job(dcim: DCIMRepository, job: Job, limit: Optional[int] = 
     return devices
 
 
-def _run_single_job(job_ref: JobRef, creds, args):
+def _run_single_job(job_ref: JobRef, creds, resolver, args):
     """Run a single job."""
     from vcollector.jobs.runner import JobRunner, JobResult
 
@@ -410,7 +413,7 @@ def _run_single_job(job_ref: JobRef, creds, args):
         print(f"Force save: enabled")
     print()
 
-    # Create runner with job config
+    # Create runner with job config and resolver for per-device credentials
     runner = JobRunner(
         credentials=creds,
         validate=True,
@@ -419,6 +422,7 @@ def _run_single_job(job_ref: JobRef, creds, args):
         force_save=getattr(args, 'force_save', False),
         limit=args.limit,
         quiet=args.quiet,
+        credential_resolver=resolver,  # Enable per-device credentials
     )
 
     def progress(completed, total, result):
@@ -449,7 +453,7 @@ def _run_single_job(job_ref: JobRef, creds, args):
     return result
 
 
-def _run_batch_jobs(job_refs: List[JobRef], creds, args):
+def _run_batch_jobs(job_refs: List[JobRef], creds, resolver, args):
     """Run multiple jobs."""
     from vcollector.jobs.batch import BatchRunner, BatchResult
 
@@ -475,6 +479,7 @@ def _run_batch_jobs(job_refs: List[JobRef], creds, args):
         print(f"Force save: enabled")
     print()
 
+    # Note: BatchRunner may need updating to pass credential_resolver
     runner = BatchRunner(
         credentials=creds,
         max_concurrent_jobs=args.max_concurrent_jobs,

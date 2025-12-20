@@ -1,10 +1,13 @@
 """
 SSH Executor Pool - Concurrent device connections.
 
+Path: vcollector/ssh/executor.py
+
 Provides concurrent SSH command execution using ThreadPoolExecutor.
 Integrates with the credential vault and validation engine.
 
 Enhanced with comprehensive error trapping and logging.
+Supports per-device credentials via extra_data['credentials'].
 """
 
 import logging
@@ -361,7 +364,8 @@ class SSHExecutorPool:
         Args:
             host: Device IP/hostname.
             command: Comma-separated commands.
-            extra_data: Optional device metadata.
+            extra_data: Optional device metadata. May include 'credentials' key
+                       for per-device credential override.
 
         Returns:
             ExecutionResult with output or error.
@@ -372,14 +376,20 @@ class SSHExecutorPool:
 
         logger.debug(f"{host}: Starting SSH connection")
 
+        # Use per-device credentials if provided, otherwise use pool default
+        creds = self.credentials
+        if extra_data and extra_data.get('credentials'):
+            creds = extra_data['credentials']
+            logger.debug(f"{host}: Using per-device credential")
+
         try:
             # Build SSH client options
             ssh_options = SSHClientOptions(
                 host=host,
-                username=self.credentials.username,
-                password=self.credentials.password,
-                key_content=self.credentials.key_content,
-                key_password=self.credentials.key_passphrase,
+                username=creds.username,
+                password=creds.password,
+                key_content=creds.key_content,
+                key_password=creds.key_passphrase,
                 timeout=self.options.timeout,
                 shell_timeout=self.options.shell_timeout,
                 inter_command_time=self.options.inter_command_time,

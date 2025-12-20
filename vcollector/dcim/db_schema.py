@@ -17,7 +17,7 @@ from typing import Optional
 from datetime import datetime
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 SCHEMA_SQL = """
 -- ============================================================================
@@ -160,6 +160,10 @@ CREATE TABLE IF NOT EXISTS dcim_device (
     credential_id INTEGER,                  -- FK to credentials table (NULL = use site/global default)
     ssh_port INTEGER DEFAULT 22,
     
+    -- Credential testing (v2)
+    credential_tested_at TEXT,              -- Last credential test timestamp
+    credential_test_result TEXT DEFAULT 'untested',  -- 'untested', 'success', 'failed'
+    
     -- Metadata
     description TEXT,
     comments TEXT,
@@ -188,6 +192,8 @@ CREATE INDEX IF NOT EXISTS idx_dcim_device_role ON dcim_device(role_id);
 CREATE INDEX IF NOT EXISTS idx_dcim_device_status ON dcim_device(status);
 CREATE INDEX IF NOT EXISTS idx_dcim_device_primary_ip4 ON dcim_device(primary_ip4);
 CREATE INDEX IF NOT EXISTS idx_dcim_device_netbox_id ON dcim_device(netbox_id);
+CREATE INDEX IF NOT EXISTS idx_dcim_device_cred_result ON dcim_device(credential_test_result);
+CREATE INDEX IF NOT EXISTS idx_dcim_device_cred_tested ON dcim_device(credential_tested_at);
 
 -- ----------------------------------------------------------------------------
 -- Useful views for common queries
@@ -206,6 +212,8 @@ SELECT
     d.serial_number,
     d.asset_tag,
     d.credential_id,
+    d.credential_tested_at,
+    d.credential_test_result,
     d.description,
     d.last_collected_at,
     d.netbox_id,
@@ -379,11 +387,68 @@ class DCIMDatabase:
         cursor.execute("SELECT MAX(version) FROM schema_version")
         current_version = cursor.fetchone()[0] or 0
 
-        if current_version < SCHEMA_VERSION:
-            # Run migrations here when needed
-            pass
+        if current_version < 2:
+            # Run V2 migration - add credential testing columns
+            self._run_migration_v2(cursor)
+            cursor.execute(
+                "INSERT INTO schema_version (version) VALUES (?)",
+                (2,)
+            )
+            self.conn.commit()
 
         return False
+
+    def _run_migration_v2(self, cursor: sqlite3.Cursor):
+        """
+        Run V2 migration - add credential testing columns.
+
+        Called automatically by init_schema() when upgrading from v1.
+        """
+        # Check if columns already exist
+        cursor.execute("PRAGMA table_info(dcim_device)")
+        existing_columns = {row[1] for row in cursor.fetchall()}
+
+        # Add credential_tested_at if missing
+        if 'credential_tested_at' not in existing_columns:
+            cursor.execute(
+                "ALTER TABLE dcim_device ADD COLUMN credential_tested_at TEXT"
+            )
+
+        # Add credential_test_result if missing
+        if 'credential_test_result' not in existing_columns:
+            cursor.execute(
+                "ALTER TABLE dcim_device ADD COLUMN credential_test_result TEXT DEFAULT 'untested'"
+            )
+
+        # Add indexes (IF NOT EXISTS makes this safe to run multiple times)
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_dcim_device_cred_result ON dcim_device(credential_test_result)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_dcim_device_cred_tested ON dcim_device(credential_tested_at)"
+        )
+
+        # Recreate view to include new columns
+        cursor.execute("DROP VIEW IF EXISTS v_device_detail")
+        cursor.execute("""
+            CREATE VIEW v_device_detail AS
+            SELECT 
+                d.id, d.name, d.status, d.primary_ip4, d.primary_ip6, d.oob_ip,
+                d.ssh_port, d.serial_number, d.asset_tag, d.credential_id,
+                d.credential_tested_at, d.credential_test_result,
+                d.description, d.last_collected_at, d.netbox_id,
+                d.created_at, d.updated_at,
+                s.id AS site_id, s.name AS site_name, s.slug AS site_slug,
+                p.id AS platform_id, p.name AS platform_name, p.slug AS platform_slug,
+                p.netmiko_device_type, p.paging_disable_command,
+                m.id AS manufacturer_id, m.name AS manufacturer_name, m.slug AS manufacturer_slug,
+                r.id AS role_id, r.name AS role_name, r.slug AS role_slug
+            FROM dcim_device d
+            LEFT JOIN dcim_site s ON d.site_id = s.id
+            LEFT JOIN dcim_platform p ON d.platform_id = p.id
+            LEFT JOIN dcim_manufacturer m ON p.manufacturer_id = m.id
+            LEFT JOIN dcim_device_role r ON d.role_id = r.id
+        """)
 
     def _init_default_data(self, cursor: sqlite3.Cursor):
         """Insert default manufacturers, platforms, and roles."""

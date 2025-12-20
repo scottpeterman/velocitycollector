@@ -125,6 +125,8 @@ class Device:
     primary_ip6: Optional[str] = None
     oob_ip: Optional[str] = None
     credential_id: Optional[int] = None
+    credential_tested_at: Optional[str] = None      # v2: Last credential test timestamp
+    credential_test_result: Optional[str] = None    # v2: 'untested', 'success', 'failed'
     ssh_port: int = 22
     description: Optional[str] = None
     comments: Optional[str] = None
@@ -531,8 +533,8 @@ class DCIMRepository:
 
         for key in ['platform_id', 'role_id', 'status', 'serial_number',
                     'asset_tag', 'primary_ip4', 'primary_ip6', 'oob_ip',
-                    'credential_id', 'ssh_port', 'description', 'comments',
-                    'netbox_id']:
+                    'credential_id', 'credential_tested_at', 'credential_test_result',
+                    'ssh_port', 'description', 'comments', 'netbox_id']:
             if key in kwargs and kwargs[key] is not None:
                 fields.append(key)
                 values.append(kwargs[key])
@@ -716,6 +718,163 @@ class DCIMRepository:
         return count
 
     # =========================================================================
+    # Credential Testing
+    # =========================================================================
+
+    def get_devices_by_credential_status(
+        self,
+        test_result: Optional[str] = None,
+        has_credential: Optional[bool] = None,
+        untested_only: bool = False,
+        status: str = 'active',
+    ) -> List[Device]:
+        """
+        Get devices filtered by credential status.
+
+        Args:
+            test_result: Filter by test result ('success', 'failed', 'untested')
+            has_credential: True = only with credential_id, False = only without
+            untested_only: Shortcut for test_result='untested'
+            status: Device status filter (default: 'active')
+
+        Returns:
+            List of Device objects
+        """
+        query = "SELECT * FROM v_device_detail WHERE status = ?"
+        params = [status]
+
+        if untested_only:
+            test_result = 'untested'
+
+        if test_result:
+            if test_result == 'untested':
+                # Handle NULL as untested
+                query += " AND (credential_test_result = ? OR credential_test_result IS NULL)"
+            else:
+                query += " AND credential_test_result = ?"
+            params.append(test_result)
+
+        if has_credential is True:
+            query += " AND credential_id IS NOT NULL"
+        elif has_credential is False:
+            query += " AND credential_id IS NULL"
+
+        query += " ORDER BY site_name, name"
+
+        rows = self.conn.execute(query, params).fetchall()
+        return [self._row_to_dataclass(row, Device) for row in rows]
+
+    def get_credential_coverage_stats(self) -> Dict[str, int]:
+        """
+        Get credential coverage statistics for active devices.
+
+        Returns:
+            Dict with counts: total_active, with_credential, without_credential,
+            test_success, test_failed, test_untested
+        """
+        stats = {}
+
+        stats['total_active'] = self.conn.execute(
+            "SELECT COUNT(*) FROM dcim_device WHERE status = 'active'"
+        ).fetchone()[0]
+
+        stats['with_credential'] = self.conn.execute(
+            "SELECT COUNT(*) FROM dcim_device WHERE status = 'active' AND credential_id IS NOT NULL"
+        ).fetchone()[0]
+
+        stats['without_credential'] = self.conn.execute(
+            "SELECT COUNT(*) FROM dcim_device WHERE status = 'active' AND credential_id IS NULL"
+        ).fetchone()[0]
+
+        # By test result
+        stats['test_success'] = self.conn.execute(
+            "SELECT COUNT(*) FROM dcim_device WHERE status = 'active' AND credential_test_result = 'success'"
+        ).fetchone()[0]
+
+        stats['test_failed'] = self.conn.execute(
+            "SELECT COUNT(*) FROM dcim_device WHERE status = 'active' AND credential_test_result = 'failed'"
+        ).fetchone()[0]
+
+        # Untested includes NULL
+        stats['test_untested'] = self.conn.execute(
+            """SELECT COUNT(*) FROM dcim_device 
+               WHERE status = 'active' AND (credential_test_result = 'untested' OR credential_test_result IS NULL)"""
+        ).fetchone()[0]
+
+        return stats
+
+    def update_device_credential_test(
+        self,
+        device_id: int,
+        credential_id: Optional[int],
+        test_result: str,
+    ) -> bool:
+        """
+        Update device credential test results.
+
+        Args:
+            device_id: Device ID
+            credential_id: Working credential ID (None if no match)
+            test_result: 'success' or 'failed'
+
+        Returns:
+            True if updated successfully
+        """
+        return self.update_device(
+            device_id,
+            credential_id=credential_id,
+            credential_tested_at=self._now(),
+            credential_test_result=test_result,
+        )
+
+    def get_devices_needing_credential_test(
+        self,
+        hours_since_test: int = 24,
+        include_failed: bool = True,
+        limit: Optional[int] = None,
+    ) -> List[Device]:
+        """
+        Get devices that need credential testing.
+
+        Args:
+            hours_since_test: Re-test devices tested more than this many hours ago
+            include_failed: Include devices with failed test results
+            limit: Maximum devices to return
+
+        Returns:
+            List of Device objects needing testing
+        """
+        query = """
+            SELECT * FROM v_device_detail 
+            WHERE status = 'active' 
+            AND primary_ip4 IS NOT NULL
+            AND (
+                credential_test_result IS NULL 
+                OR credential_test_result = 'untested'
+        """
+        params = []
+
+        if include_failed:
+            query += " OR credential_test_result = 'failed'"
+
+        # Include devices not tested recently
+        query += """
+                OR (credential_tested_at IS NOT NULL 
+                    AND datetime(credential_tested_at) < datetime('now', ?))
+            )
+            ORDER BY 
+                CASE WHEN credential_test_result IS NULL OR credential_test_result = 'untested' THEN 0 ELSE 1 END,
+                credential_tested_at
+        """
+        params.append(f'-{hours_since_test} hours')
+
+        if limit:
+            query += f" LIMIT {limit}"
+
+        rows = self.conn.execute(query, params).fetchall()
+        return [self._row_to_dataclass(row, Device) for row in rows]
+
+    # =========================================================================
     # Statistics
     # =========================================================================
     def get_stats(self) -> Dict[str, int]:
@@ -757,4 +916,3 @@ class DCIMRepository:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
-

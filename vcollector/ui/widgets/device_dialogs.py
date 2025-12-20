@@ -2,17 +2,18 @@
 VelocityCollector Device Dialogs
 
 Dialog windows for viewing and editing device records.
-- DeviceDetailDialog: Read-only view of device details
-- DeviceEditDialog: Create/Edit form with validation
+- DeviceDetailDialog: Read-only view of device details with credential status
+- DeviceEditDialog: Create/Edit form with credential dropdown and test button
 """
 
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QLabel, QLineEdit,
     QComboBox, QSpinBox, QTextEdit, QDialogButtonBox, QPushButton,
-    QMessageBox, QFrame, QGroupBox, QGridLayout, QWidget, QTabWidget
+    QMessageBox, QFrame, QGroupBox, QGridLayout, QWidget, QTabWidget,
+    QProgressDialog
 )
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QIntValidator, QRegularExpressionValidator
+from PyQt6.QtCore import Qt, pyqtSignal, QThread
+from PyQt6.QtGui import QIntValidator, QRegularExpressionValidator, QColor
 
 from vcollector.dcim.dcim_repo import (
     DCIMRepository, Device, Site, Platform, DeviceRole, DeviceStatus
@@ -23,22 +24,88 @@ from datetime import datetime
 import re
 
 
+class CredentialTestThread(QThread):
+    """Background thread for testing a single credential."""
+
+    finished_test = pyqtSignal(bool, str)  # success, message
+
+    def __init__(self, device: Device, credential_id: int, vault_password: str):
+        super().__init__()
+        self.device = device
+        self.credential_id = credential_id
+        self.vault_password = vault_password
+
+    def run(self):
+        try:
+            from vcollector.vault.resolver import CredentialResolver
+            from vcollector.ssh.client import SSHClient, SSHClientOptions
+
+            resolver = CredentialResolver()
+            if not resolver.unlock_vault(self.vault_password):
+                self.finished_test.emit(False, "Invalid vault password")
+                return
+
+            try:
+                # Get credentials list and find the one we need
+                creds_list = resolver.list_credentials()
+                cred_info = next((c for c in creds_list if c.id == self.credential_id), None)
+
+                if not cred_info:
+                    self.finished_test.emit(False, f"Credential ID {self.credential_id} not found")
+                    return
+
+                ssh_creds = resolver.get_ssh_credentials(credential_name=cred_info.name)
+                if not ssh_creds:
+                    self.finished_test.emit(False, "Failed to load credential")
+                    return
+
+                # Test connection
+                host = self.device.primary_ip4
+                port = self.device.ssh_port or 22
+
+                options = SSHClientOptions(
+                    host=host,
+                    port=port,
+                    username=ssh_creds.username,
+                    password=ssh_creds.password,
+                    key_content=ssh_creds.key_content,
+                    key_password=ssh_creds.key_passphrase,
+                    timeout=15,
+                    shell_timeout=5,
+                )
+
+                client = SSHClient(options)
+                client.connect()
+                prompt = client.find_prompt()
+                client.disconnect()
+
+                self.finished_test.emit(True, f"Connection successful! Prompt: {prompt}")
+
+            finally:
+                resolver.lock_vault()
+
+        except Exception as e:
+            self.finished_test.emit(False, str(e))
+
+
 class DeviceDetailDialog(QDialog):
     """
     Read-only dialog showing full device details.
 
     Used for quick inspection without risk of accidental edits.
+    Now includes credential status information.
     """
 
     # Signal to request opening edit dialog
     edit_requested = pyqtSignal(int)  # device_id
 
-    def __init__(self, device: Device, parent=None):
+    def __init__(self, device: Device, repo: Optional[DCIMRepository] = None, parent=None):
         super().__init__(parent)
         self.device = device
+        self.repo = repo
         self.setWindowTitle(f"Device: {device.name}")
         self.setMinimumWidth(550)
-        self.setMinimumHeight(400)
+        self.setMinimumHeight(450)
         self.init_ui()
 
     def init_ui(self):
@@ -89,6 +156,35 @@ class DeviceDetailDialog(QDialog):
 
         tabs.addTab(platform_tab, "Platform")
 
+        # === Credentials Tab (NEW) ===
+        cred_tab = QWidget()
+        cred_layout = QFormLayout(cred_tab)
+        cred_layout.setSpacing(8)
+        cred_layout.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
+
+        # Credential info
+        cred_name = self._get_credential_name(self.device.credential_id)
+        cred_layout.addRow("Assigned Credential:", self._label(cred_name))
+
+        # Test result with color
+        test_result = self.device.credential_test_result or "untested"
+        test_label = self._cred_status_label(test_result)
+        cred_layout.addRow("Test Result:", test_label)
+
+        # Last tested
+        cred_layout.addRow("Last Tested:",
+                          self._label(self._format_timestamp(self.device.credential_tested_at)))
+
+        cred_layout.addRow(self._separator())
+
+        # Test button
+        if self.device.credential_id and self.device.primary_ip4:
+            test_btn = QPushButton("Test Credential Now")
+            test_btn.clicked.connect(self._on_test_credential)
+            cred_layout.addRow("", test_btn)
+
+        tabs.addTab(cred_tab, "Credentials")
+
         # === Metadata Tab ===
         meta_tab = QWidget()
         meta_layout = QVBoxLayout(meta_tab)
@@ -100,8 +196,6 @@ class DeviceDetailDialog(QDialog):
         time_form.addRow("Updated:", self._label(self._format_timestamp(self.device.updated_at)))
         time_form.addRow("Last Collected:", self._label(self._format_timestamp(self.device.last_collected_at)))
         time_form.addRow("NetBox ID:", self._label(str(self.device.netbox_id) if self.device.netbox_id else None))
-        time_form.addRow("Credential ID:",
-                         self._label(str(self.device.credential_id) if self.device.credential_id else None))
         meta_layout.addLayout(time_form)
 
         # Description
@@ -144,6 +238,22 @@ class DeviceDetailDialog(QDialog):
 
         layout.addLayout(button_layout)
 
+    def _get_credential_name(self, credential_id: Optional[int]) -> str:
+        """Get credential name by ID."""
+        if not credential_id:
+            return "— None —"
+
+        try:
+            from vcollector.vault.resolver import CredentialResolver
+            resolver = CredentialResolver()
+            creds = resolver.list_credentials()
+            for cred in creds:
+                if cred.id == credential_id:
+                    return f"{cred.name} (ID: {credential_id})"
+            return f"ID: {credential_id} (not found)"
+        except Exception:
+            return f"ID: {credential_id}"
+
     def _label(self, text: Optional[str]) -> QLabel:
         """Create a label with default placeholder for empty values."""
         label = QLabel(text or "—")
@@ -169,6 +279,29 @@ class DeviceDetailDialog(QDialog):
 
         return label
 
+    def _cred_status_label(self, test_result: str) -> QLabel:
+        """Create a colored credential status label."""
+        display_text = test_result.title()
+        if test_result == 'success':
+            display_text = "✓ Success"
+        elif test_result == 'failed':
+            display_text = "✗ Failed"
+        elif test_result == 'untested':
+            display_text = "? Untested"
+
+        label = QLabel(display_text)
+        label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+
+        colors = {
+            'success': '#2ecc71',
+            'failed': '#e74c3c',
+            'untested': '#95a5a6',
+        }
+        if test_result in colors:
+            label.setStyleSheet(f"color: {colors[test_result]}; font-weight: bold;")
+
+        return label
+
     def _separator(self) -> QFrame:
         """Create a horizontal separator line."""
         line = QFrame()
@@ -191,10 +324,61 @@ class DeviceDetailDialog(QDialog):
         self.edit_requested.emit(self.device.id)
         self.accept()
 
+    def _on_test_credential(self):
+        """Test the assigned credential."""
+        from PyQt6.QtWidgets import QInputDialog, QLineEdit
+
+        password, ok = QInputDialog.getText(
+            self, "Vault Password",
+            "Enter vault password to test credential:",
+            QLineEdit.EchoMode.Password
+        )
+
+        if not ok or not password:
+            return
+
+        # Show progress
+        progress = QProgressDialog("Testing credential...", None, 0, 0, self)
+        progress.setWindowModality(Qt.WindowModality.WindowModal)
+        progress.show()
+
+        # Run test in background
+        self._test_thread = CredentialTestThread(
+            self.device, self.device.credential_id, password
+        )
+        self._test_thread.finished_test.connect(
+            lambda success, msg: self._on_test_finished(success, msg, progress)
+        )
+        self._test_thread.start()
+
+    def _on_test_finished(self, success: bool, message: str, progress: QProgressDialog):
+        """Handle credential test completion."""
+        progress.close()
+
+        if success:
+            QMessageBox.information(self, "Test Successful", message)
+            # Update the device in database if repo available
+            if self.repo:
+                self.repo.update_device_credential_test(
+                    self.device.id,
+                    self.device.credential_id,
+                    'success'
+                )
+        else:
+            QMessageBox.warning(self, "Test Failed", f"Credential test failed:\n\n{message}")
+            if self.repo:
+                self.repo.update_device_credential_test(
+                    self.device.id,
+                    self.device.credential_id,
+                    'failed'
+                )
+
 
 class DeviceEditDialog(QDialog):
     """
     Create/Edit dialog for device records.
+
+    Now includes credential dropdown with test button.
 
     Usage:
         # Edit existing device
@@ -222,10 +406,11 @@ class DeviceEditDialog(QDialog):
         self._sites: List[Site] = []
         self._platforms: List[Platform] = []
         self._roles: List[DeviceRole] = []
+        self._credentials: List = []  # CredentialInfo objects
 
         self.setWindowTitle("Edit Device" if self.is_edit_mode else "New Device")
-        self.setMinimumWidth(500)
-        self.setMinimumHeight(550)
+        self.setMinimumWidth(520)
+        self.setMinimumHeight(580)
 
         self.init_ui()
         self.load_lookups()
@@ -298,14 +483,47 @@ class DeviceEditDialog(QDialog):
         self.ssh_port_input.setValue(22)
         network_layout.addRow("SSH Port:", self.ssh_port_input)
 
-        # Credential override
-        self.credential_input = QSpinBox()
-        self.credential_input.setRange(0, 9999)
-        self.credential_input.setValue(0)
-        self.credential_input.setSpecialValueText("Default")
-        network_layout.addRow("Credential ID:", self.credential_input)
-
         tabs.addTab(network_tab, "Network")
+
+        # === Credentials Tab (NEW - replaces simple ID input) ===
+        cred_tab = QWidget()
+        cred_layout = QFormLayout(cred_tab)
+        cred_layout.setSpacing(10)
+        cred_layout.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
+
+        # Credential dropdown
+        cred_row = QHBoxLayout()
+        self.credential_combo = QComboBox()
+        self.credential_combo.setMinimumWidth(200)
+        cred_row.addWidget(self.credential_combo, 1)
+
+        # Test button
+        self.test_cred_btn = QPushButton("Test")
+        self.test_cred_btn.setFixedWidth(60)
+        self.test_cred_btn.setToolTip("Test selected credential against this device")
+        self.test_cred_btn.clicked.connect(self._on_test_credential)
+        cred_row.addWidget(self.test_cred_btn)
+
+        cred_layout.addRow("Credential:", cred_row)
+
+        # Credential status display (edit mode only)
+        self.cred_status_label = QLabel("")
+        cred_layout.addRow("Status:", self.cred_status_label)
+
+        # Last tested
+        self.cred_tested_label = QLabel("—")
+        cred_layout.addRow("Last Tested:", self.cred_tested_label)
+
+        # Help text
+        help_label = QLabel(
+            "Select a credential for SSH authentication.\n"
+            "Use 'Discover Credentials' in the Devices view to\n"
+            "automatically find working credentials."
+        )
+        help_label.setStyleSheet("color: #888; font-style: italic;")
+        cred_layout.addRow("", help_label)
+
+        tabs.addTab(cred_tab, "Credentials")
 
         # === Hardware Tab ===
         hardware_tab = QWidget()
@@ -407,6 +625,34 @@ class DeviceEditDialog(QDialog):
         for role in self._roles:
             self.role_combo.addItem(role.name, role.id)
 
+        # Credentials (from vault)
+        self._load_credentials()
+
+    def _load_credentials(self):
+        """Load credentials from vault (encrypted list only, no secrets)."""
+        self.credential_combo.clear()
+        self.credential_combo.addItem("— None (use job default) —", None)
+
+        try:
+            from vcollector.vault.resolver import CredentialResolver
+            resolver = CredentialResolver()
+
+            if resolver.is_initialized():
+                self._credentials = resolver.list_credentials()
+
+                for cred in self._credentials:
+                    # Mark default credential
+                    suffix = " (default)" if cred.is_default else ""
+                    self.credential_combo.addItem(f"{cred.name}{suffix}", cred.id)
+            else:
+                # Vault not initialized
+                self.credential_combo.addItem("— Vault not initialized —", None)
+                self.test_cred_btn.setEnabled(False)
+
+        except Exception as e:
+            # If vault can't be accessed, still allow manual ID entry
+            self.credential_combo.addItem(f"— Error loading: {e} —", None)
+
     def populate_form(self):
         """Populate form fields from existing device."""
         if not self.device:
@@ -440,7 +686,19 @@ class DeviceEditDialog(QDialog):
         self.ip6_input.setText(self.device.primary_ip6 or "")
         self.oob_input.setText(self.device.oob_ip or "")
         self.ssh_port_input.setValue(self.device.ssh_port or 22)
-        self.credential_input.setValue(self.device.credential_id or 0)
+
+        # Credential
+        if self.device.credential_id:
+            cred_idx = self.credential_combo.findData(self.device.credential_id)
+            if cred_idx >= 0:
+                self.credential_combo.setCurrentIndex(cred_idx)
+            else:
+                # Credential not in list - add it manually
+                self.credential_combo.addItem(f"ID: {self.device.credential_id}", self.device.credential_id)
+                self.credential_combo.setCurrentIndex(self.credential_combo.count() - 1)
+
+        # Credential status
+        self._update_cred_status_display()
 
         # Hardware
         self.serial_input.setText(self.device.serial_number or "")
@@ -450,6 +708,102 @@ class DeviceEditDialog(QDialog):
         # Notes
         self.description_input.setPlainText(self.device.description or "")
         self.comments_input.setPlainText(self.device.comments or "")
+
+    def _update_cred_status_display(self):
+        """Update credential status labels."""
+        if not self.device:
+            self.cred_status_label.setText("—")
+            self.cred_tested_label.setText("—")
+            return
+
+        # Test result
+        test_result = self.device.credential_test_result or "untested"
+        if test_result == 'success':
+            self.cred_status_label.setText("✓ Success")
+            self.cred_status_label.setStyleSheet("color: #2ecc71; font-weight: bold;")
+        elif test_result == 'failed':
+            self.cred_status_label.setText("✗ Failed")
+            self.cred_status_label.setStyleSheet("color: #e74c3c; font-weight: bold;")
+        else:
+            self.cred_status_label.setText("? Untested")
+            self.cred_status_label.setStyleSheet("color: #95a5a6;")
+
+        # Last tested
+        if self.device.credential_tested_at:
+            try:
+                dt = datetime.fromisoformat(self.device.credential_tested_at)
+                self.cred_tested_label.setText(dt.strftime("%Y-%m-%d %H:%M"))
+            except (ValueError, AttributeError):
+                self.cred_tested_label.setText(self.device.credential_tested_at)
+        else:
+            self.cred_tested_label.setText("Never")
+
+    def _on_test_credential(self):
+        """Test the selected credential against this device."""
+        credential_id = self.credential_combo.currentData()
+
+        if not credential_id:
+            QMessageBox.warning(
+                self, "No Credential",
+                "Please select a credential to test."
+            )
+            return
+
+        # Need IP address for testing
+        ip = self.ip4_input.text().strip()
+        if not ip:
+            QMessageBox.warning(
+                self, "No IP Address",
+                "Please enter a Primary IPv4 address to test connectivity."
+            )
+            return
+
+        # Build temporary device object for testing
+        test_device = Device(
+            id=self.device.id if self.device else 0,
+            name=self.name_input.text() or "test",
+            primary_ip4=ip.split('/')[0],  # Strip CIDR if present
+            ssh_port=self.ssh_port_input.value(),
+        )
+
+        # Get vault password
+        from PyQt6.QtWidgets import QInputDialog, QLineEdit
+        password, ok = QInputDialog.getText(
+            self, "Vault Password",
+            "Enter vault password to test credential:",
+            QLineEdit.EchoMode.Password
+        )
+
+        if not ok or not password:
+            return
+
+        # Show progress
+        progress = QProgressDialog("Testing credential...", None, 0, 0, self)
+        progress.setWindowModality(Qt.WindowModality.WindowModal)
+        progress.show()
+
+        # Run test
+        self._test_thread = CredentialTestThread(test_device, credential_id, password)
+        self._test_thread.finished_test.connect(
+            lambda success, msg: self._on_test_finished(success, msg, progress)
+        )
+        self._test_thread.start()
+
+    def _on_test_finished(self, success: bool, message: str, progress: QProgressDialog):
+        """Handle credential test completion."""
+        progress.close()
+
+        if success:
+            QMessageBox.information(self, "Test Successful", message)
+            # Update status display
+            self.cred_status_label.setText("✓ Success")
+            self.cred_status_label.setStyleSheet("color: #2ecc71; font-weight: bold;")
+            self.cred_tested_label.setText("Just now")
+        else:
+            QMessageBox.warning(self, "Test Failed", f"Credential test failed:\n\n{message}")
+            self.cred_status_label.setText("✗ Failed")
+            self.cred_status_label.setStyleSheet("color: #e74c3c; font-weight: bold;")
+            self.cred_tested_label.setText("Just now")
 
     def validate(self) -> bool:
         """Validate form inputs. Returns True if valid."""
@@ -545,7 +899,7 @@ class DeviceEditDialog(QDialog):
             'primary_ip6': self.ip6_input.text().strip() or None,
             'oob_ip': self.oob_input.text().strip() or None,
             'ssh_port': self.ssh_port_input.value(),
-            'credential_id': self.credential_input.value() or None,
+            'credential_id': self.credential_combo.currentData(),
             'serial_number': self.serial_input.text().strip() or None,
             'asset_tag': self.asset_tag_input.text().strip() or None,
             'description': self.description_input.toPlainText().strip() or None,
@@ -642,7 +996,7 @@ if __name__ == "__main__":
         device = repo.get_device(device_id=devices[0].id)
 
         # Test detail dialog
-        detail = DeviceDetailDialog(device)
+        detail = DeviceDetailDialog(device, repo)
         detail.edit_requested.connect(lambda id: print(f"Edit requested for device {id}"))
 
         if detail.exec() == QDialog.DialogCode.Accepted:
