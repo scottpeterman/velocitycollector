@@ -5,20 +5,366 @@ Job management view with live data from VelocityCollector collector database.
 Provides search, filtering, and job management operations.
 """
 
+import re
+import json
+import hashlib
+import tempfile
+import zipfile
+from pathlib import Path
+from datetime import datetime
+
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QLabel,
     QTableWidget, QTableWidgetItem, QComboBox, QHeaderView, QAbstractItemView,
-    QMenu, QMessageBox, QDialog
+    QMenu, QMessageBox, QDialog, QProgressBar, QDialogButtonBox
 )
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QThread
 from PyQt6.QtGui import QAction, QColor, QShortcut, QKeySequence
 
 from vcollector.dcim.jobs_repo import JobsRepository, Job
 from vcollector.ui.widgets.stat_cards import StatCard
 from vcollector.ui.widgets.job_dialogs import JobDetailDialog, JobEditDialog
 
-from typing import Optional, List
-from datetime import datetime
+from typing import Optional, List, Dict, Any
+
+# Try to import requests
+REQUESTS_AVAILABLE = False
+try:
+    import requests
+    REQUESTS_AVAILABLE = True
+except ImportError:
+    pass
+
+# GitHub URL for starter jobs
+STARTER_JOBS_URL = "https://github.com/scottpeterman/velocitycollector/raw/refs/heads/main/jobs_v2.zip"
+
+# Vendor prefixes for slug generation
+VENDOR_PREFIXES = ['cisco', 'arista', 'juniper', 'hp', 'dell', 'paloalto', 'fortinet']
+
+
+def slugify(text: str) -> str:
+    """Convert text to URL-friendly slug."""
+    slug = text.lower().strip()
+    slug = re.sub(r'[^a-z0-9]+', '-', slug)
+    slug = slug.strip('-')
+    slug = re.sub(r'-+', '-', slug)
+    return slug
+
+
+def parse_job_json(filepath: Path) -> Optional[Dict[str, Any]]:
+    """Parse a job JSON file and extract relevant fields."""
+    try:
+        with open(filepath) as f:
+            data = json.load(f)
+
+        job = {
+            'legacy_job_id': data.get('job_id'),
+            'legacy_job_file': filepath.name,
+            'capture_type': data.get('capture_type', 'custom'),
+            'vendor': data.get('vendor'),
+        }
+
+        # Extract commands section
+        commands = data.get('commands', {})
+        if isinstance(commands, dict):
+            job['paging_disable_command'] = commands.get('paging_disable')
+            job['command'] = commands.get('command', '')
+            job['output_directory'] = commands.get('output_directory')
+        elif isinstance(commands, str):
+            job['command'] = commands
+
+        # Device filter
+        device_filter = data.get('device_filter', {})
+        job['device_filter_source'] = device_filter.get('source', 'database')
+        job['device_filter_name_pattern'] = device_filter.get('name_pattern')
+
+        # Validation
+        validation = data.get('validation', {})
+        job['use_textfsm'] = 1 if validation.get('use_tfsm') else 0
+        job['textfsm_template'] = validation.get('tfsm_filter')
+        job['validation_min_score'] = validation.get('min_score', 0)
+        job['store_failures'] = 1 if validation.get('store_failures', True) else 0
+
+        # Execution
+        execution = data.get('execution', {})
+        job['max_workers'] = execution.get('max_workers', 10)
+        job['timeout_seconds'] = execution.get('timeout', 60)
+        job['inter_command_delay'] = execution.get('inter_command_time', 1)
+
+        # Storage
+        storage = data.get('storage', {})
+        job['base_path'] = storage.get('base_path', '~/.vcollector/collections')
+        job['filename_pattern'] = storage.get('filename_pattern', '{device_name}.txt')
+
+        # Credentials
+        creds = data.get('credentials', {})
+        job['credential_fallback_env'] = creds.get('fallback_env')
+
+        # Protocol
+        job['protocol'] = data.get('protocol', 'ssh')
+
+        # Generate name and slug
+        vendor_name = (job['vendor'] or 'multi').title()
+        capture_name = (job['capture_type'] or 'custom').upper()
+        job['name'] = f"{vendor_name} {capture_name} Collection"
+        job['slug'] = slugify(f"{job['vendor'] or 'multi'}-{job['capture_type'] or 'custom'}")
+
+        if job['legacy_job_id']:
+            job['slug'] = f"{job['slug']}-{job['legacy_job_id']}"
+
+        return job
+
+    except (json.JSONDecodeError, KeyError) as e:
+        print(f"Error parsing {filepath}: {e}")
+        return None
+
+
+class StarterJobsDownloadWorker(QThread):
+    """Worker thread for downloading and importing starter jobs."""
+    progress = pyqtSignal(str)  # Status message
+    finished = pyqtSignal(dict)  # Stats dict
+    error = pyqtSignal(str)
+
+    def __init__(self, repo: JobsRepository):
+        super().__init__()
+        self.repo = repo
+        # Get db_path from repo
+        self.db_path = getattr(repo, 'db_path', None) or getattr(repo, '_db_path', None)
+
+    def _init_jobs_schema(self, conn):
+        """Initialize jobs schema if needed."""
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS jobs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                slug TEXT UNIQUE NOT NULL,
+                description TEXT,
+                capture_type TEXT NOT NULL,
+                vendor TEXT,
+                credential_id INTEGER,
+                credential_fallback_env TEXT,
+                protocol TEXT NOT NULL DEFAULT 'ssh',
+                device_filter_source TEXT DEFAULT 'database',
+                device_filter_platform_id INTEGER,
+                device_filter_site_id INTEGER,
+                device_filter_role_id INTEGER,
+                device_filter_name_pattern TEXT,
+                device_filter_status TEXT DEFAULT 'active',
+                paging_disable_command TEXT,
+                command TEXT NOT NULL,
+                output_directory TEXT,
+                filename_pattern TEXT DEFAULT '{device_name}.txt',
+                use_textfsm INTEGER DEFAULT 0,
+                textfsm_template TEXT,
+                validation_min_score INTEGER DEFAULT 0,
+                store_failures INTEGER DEFAULT 1,
+                max_workers INTEGER DEFAULT 10,
+                timeout_seconds INTEGER DEFAULT 60,
+                inter_command_delay INTEGER DEFAULT 1,
+                base_path TEXT DEFAULT '~/.vcollector/collections',
+                schedule_enabled INTEGER DEFAULT 0,
+                schedule_cron TEXT,
+                is_enabled INTEGER DEFAULT 1,
+                last_run_at TEXT,
+                last_run_status TEXT,
+                legacy_job_id INTEGER,
+                legacy_job_file TEXT,
+                migrated_at TEXT,
+                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+                FOREIGN KEY (credential_id) REFERENCES credentials(id) ON DELETE SET NULL
+            )
+        """)
+        conn.commit()
+
+    def _migrate_job(self, conn, job: Dict[str, Any]) -> Optional[int]:
+        """Insert a job into the database."""
+        import sqlite3
+        cursor = conn.cursor()
+
+        # Check if already exists
+        cursor.execute(
+            "SELECT id FROM jobs WHERE legacy_job_id = ? OR slug = ?",
+            (job.get('legacy_job_id'), job['slug'])
+        )
+        existing = cursor.fetchone()
+        if existing:
+            return None  # Skipped
+
+        fields = [
+            'name', 'slug', 'capture_type', 'vendor', 'credential_fallback_env',
+            'protocol', 'device_filter_source', 'device_filter_name_pattern',
+            'paging_disable_command', 'command', 'output_directory', 'filename_pattern',
+            'use_textfsm', 'textfsm_template', 'validation_min_score', 'store_failures',
+            'max_workers', 'timeout_seconds', 'inter_command_delay', 'base_path',
+            'legacy_job_id', 'legacy_job_file', 'migrated_at'
+        ]
+
+        job['migrated_at'] = datetime.now().isoformat()
+
+        placeholders = ', '.join(['?' for _ in fields])
+        field_names = ', '.join(fields)
+        values = [job.get(f) for f in fields]
+
+        try:
+            cursor.execute(
+                f"INSERT INTO jobs ({field_names}) VALUES ({placeholders})",
+                values
+            )
+            conn.commit()
+            return cursor.lastrowid
+        except sqlite3.IntegrityError:
+            return None
+
+    def run(self):
+        import sqlite3
+        try:
+            # Download zip
+            self.progress.emit("Downloading starter jobs from GitHub...")
+            response = requests.get(STARTER_JOBS_URL, timeout=60)
+            response.raise_for_status()
+
+            # Extract to temp directory
+            self.progress.emit("Extracting job definitions...")
+            with tempfile.TemporaryDirectory() as temp_dir:
+                zip_path = Path(temp_dir) / "jobs.zip"
+                with open(zip_path, 'wb') as f:
+                    f.write(response.content)
+
+                # Extract
+                extract_dir = Path(temp_dir) / "jobs"
+                with zipfile.ZipFile(zip_path, 'r') as zf:
+                    zf.extractall(extract_dir)
+
+                # Find JSON files (might be in subdirectory)
+                job_files = list(extract_dir.glob("**/*.json"))
+                self.progress.emit(f"Found {len(job_files)} job definitions...")
+
+                if not job_files:
+                    self.finished.emit({'imported': 0, 'skipped': 0, 'errors': 0})
+                    return
+
+                # Connect to database
+                if self.db_path:
+                    conn = sqlite3.connect(str(self.db_path))
+                else:
+                    # Fallback to default location
+                    default_path = Path.home() / '.vcollector' / 'collector.db'
+                    conn = sqlite3.connect(str(default_path))
+
+                self._init_jobs_schema(conn)
+
+                stats = {'imported': 0, 'skipped': 0, 'errors': 0}
+
+                for filepath in job_files:
+                    job_data = parse_job_json(filepath)
+                    if not job_data:
+                        stats['errors'] += 1
+                        continue
+
+                    self.progress.emit(f"Importing: {job_data['name']}")
+
+                    job_id = self._migrate_job(conn, job_data)
+                    if job_id:
+                        stats['imported'] += 1
+                    else:
+                        stats['skipped'] += 1
+
+                conn.close()
+                self.finished.emit(stats)
+
+        except Exception as e:
+            self.error.emit(str(e))
+
+
+class StarterJobsDialog(QDialog):
+    """Dialog for downloading starter jobs from GitHub."""
+
+    def __init__(self, repo: JobsRepository, parent=None):
+        super().__init__(parent)
+        self.repo = repo
+        self.setWindowTitle("Download Starter Jobs")
+        self.setMinimumWidth(450)
+        self.setup_ui()
+
+    def setup_ui(self):
+        layout = QVBoxLayout(self)
+
+        # Info
+        info = QLabel(
+            "Download pre-configured job definitions for common network collection tasks.\n\n"
+            "Includes jobs for:\n"
+            "• Arista EOS (ARP, BGP, configs, interfaces, LLDP, routes, etc.)\n"
+            "• Cisco IOS/IOS-XE (similar command sets)\n"
+            "• Multi-vendor generic jobs\n\n"
+            "Existing jobs with the same slug will be skipped."
+        )
+        info.setWordWrap(True)
+        layout.addWidget(info)
+
+        # Progress
+        self.progress_label = QLabel("")
+        layout.addWidget(self.progress_label)
+
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setRange(0, 0)  # Indeterminate
+        self.progress_bar.setVisible(False)
+        layout.addWidget(self.progress_bar)
+
+        # Buttons
+        btn_layout = QHBoxLayout()
+        btn_layout.addStretch()
+
+        self.download_btn = QPushButton("Download && Import")
+        self.download_btn.clicked.connect(self.start_download)
+        btn_layout.addWidget(self.download_btn)
+
+        self.close_btn = QPushButton("Close")
+        self.close_btn.setProperty("secondary", True)
+        self.close_btn.clicked.connect(self.accept)
+        btn_layout.addWidget(self.close_btn)
+
+        layout.addLayout(btn_layout)
+
+    def start_download(self):
+        if not REQUESTS_AVAILABLE:
+            QMessageBox.critical(
+                self, "Error",
+                "requests library not available.\nInstall with: pip install requests"
+            )
+            return
+
+        self.download_btn.setEnabled(False)
+        self.progress_bar.setVisible(True)
+        self.progress_label.setText("Starting download...")
+
+        self.worker = StarterJobsDownloadWorker(self.repo)
+        self.worker.progress.connect(self.update_progress)
+        self.worker.finished.connect(self.download_finished)
+        self.worker.error.connect(self.download_error)
+        self.worker.start()
+
+    def update_progress(self, message: str):
+        self.progress_label.setText(message)
+
+    def download_finished(self, stats: dict):
+        self.download_btn.setEnabled(True)
+        self.progress_bar.setVisible(False)
+
+        msg = (f"Download Complete!\n\n"
+               f"Imported: {stats['imported']}\n"
+               f"Skipped (existing): {stats['skipped']}\n"
+               f"Errors: {stats['errors']}")
+        self.progress_label.setText(
+            f"Done: {stats['imported']} imported, {stats['skipped']} skipped"
+        )
+        QMessageBox.information(self, "Import Complete", msg)
+
+    def download_error(self, error: str):
+        self.download_btn.setEnabled(True)
+        self.progress_bar.setVisible(False)
+        self.progress_label.setText("Download failed")
+        QMessageBox.critical(self, "Error", f"Download failed:\n{error}")
 
 
 class JobsView(QWidget):
@@ -63,6 +409,12 @@ class JobsView(QWidget):
         refresh_btn.setProperty("secondary", True)
         refresh_btn.clicked.connect(self.refresh_data)
         header_layout.addWidget(refresh_btn)
+
+        # Download Starter Jobs button
+        download_btn = QPushButton("Download Starter Jobs")
+        download_btn.setProperty("secondary", True)
+        download_btn.clicked.connect(self._download_starter_jobs)
+        header_layout.addWidget(download_btn)
 
         layout.addLayout(header_layout)
 
@@ -586,6 +938,19 @@ class JobsView(QWidget):
         """Handle job saved signal from edit dialog."""
         self.refresh_data()
         self.status_label.setText(f"Job saved (ID: {job_id})")
+
+    def _download_starter_jobs(self):
+        """Open dialog to download starter jobs from GitHub."""
+        if not REQUESTS_AVAILABLE:
+            QMessageBox.critical(
+                self, "Error",
+                "requests library not available.\nInstall with: pip install requests"
+            )
+            return
+
+        dialog = StarterJobsDialog(self.repo, self)
+        dialog.exec()
+        self.refresh_data()
 
     def _copy_to_clipboard(self, text: str):
         """Copy text to clipboard."""
