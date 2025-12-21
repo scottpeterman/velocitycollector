@@ -12,7 +12,7 @@ Features:
 - Light/Dark/Cyber theme support
 
 Author: Scott Peterman
-License: MIT
+License: GPLv3
 """
 
 import sys
@@ -23,10 +23,10 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QSplitter, QComboBox, QMessageBox,
     QStatusBar, QToolBar, QListWidget, QListWidgetItem,
-    QStackedWidget, QSizePolicy, QToolButton
+    QStackedWidget, QSizePolicy, QToolButton, QDialog, QFrame
 )
-from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QFont, QAction
+from PyQt6.QtCore import Qt, QSize, QUrl
+from PyQt6.QtGui import QFont, QAction, QDesktopServices, QPixmap
 
 from vcollector.ui.styles import get_stylesheet
 from vcollector.ui.widgets.credentials_view import CredentialsView
@@ -47,6 +47,159 @@ try:
 except ImportError:
     VAULT_AVAILABLE = False
     CredentialResolver = None
+
+# Version info
+__version__ = "0.3.0"
+__author__ = "Scott Peterman"
+
+
+# =============================================================================
+# ABOUT DIALOG
+# =============================================================================
+
+class AboutDialog(QDialog):
+    """Custom About dialog with proper styling and links."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("About VelocityCollector")
+        self.setMinimumSize(500, 580)
+        self.setup_ui()
+
+    def setup_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setSpacing(12)
+        layout.setContentsMargins(40, 32, 40, 24)
+
+        # Logo/Title area
+        logo_label = QLabel("⚡")
+        logo_label.setStyleSheet("font-size: 56px;")
+        logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        logo_label.setFixedHeight(70)
+        layout.addWidget(logo_label)
+
+        title = QLabel("VelocityCollector")
+        title.setStyleSheet("font-size: 26px; font-weight: bold;")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title.setFixedHeight(36)
+        layout.addWidget(title)
+
+        # version = QLabel(f"Version {__version__}")
+        # version.setStyleSheet("font-size: 13px; color: gray;")
+        # version.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # version.setFixedHeight(20)
+        # layout.addWidget(version)
+
+        # Spacer
+        layout.addSpacing(12)
+
+        # Separator
+        line = QFrame()
+        line.setFrameShape(QFrame.Shape.HLine)
+        line.setFixedHeight(1)
+        layout.addWidget(line)
+
+        # Spacer
+        layout.addSpacing(12)
+
+        # Description
+        desc = QLabel(
+            "Network data collection platform with encrypted credential vault,\n"
+            "TextFSM validation, and concurrent execution.\n\n"
+            "Part of the Velocity Suite for network automation."
+        )
+        desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        desc.setStyleSheet("font-size: 12px; line-height: 140%;")
+        desc.setFixedHeight(80)
+        layout.addWidget(desc)
+
+        # Spacer
+        layout.addSpacing(8)
+
+        # Features section
+        features_label = QLabel("Key Features")
+        features_label.setStyleSheet("font-weight: bold; font-size: 13px;")
+        features_label.setFixedHeight(24)
+        layout.addWidget(features_label)
+
+        # Features as a single formatted label for cleaner layout
+        features_text = """  📡  Device inventory from NetBox/VelocityCMDB
+  🔐  Encrypted credential vault (Fernet AES-128)
+  📋  Job-based collection with scheduling
+  ⚡  Concurrent SSH execution with workers
+  🔍  TextFSM template validation & scoring
+  📊  Collection history and output browsing"""
+
+        features_label = QLabel(features_text)
+        features_label.setStyleSheet("font-size: 12px; line-height: 160%;")
+        features_label.setContentsMargins(8, 0, 0, 0)
+        features_label.setFixedHeight(130)
+        layout.addWidget(features_label)
+
+        # Flexible spacer to push buttons down
+        layout.addStretch(1)
+
+        # Links row
+        links_layout = QHBoxLayout()
+        links_layout.setSpacing(12)
+
+        links_layout.addStretch()
+
+        github_btn = QPushButton("GitHub")
+        github_btn.setProperty("secondary", True)
+        github_btn.setFixedWidth(100)
+        github_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        github_btn.clicked.connect(
+            lambda: QDesktopServices.openUrl(QUrl("https://github.com/scottpeterman/velocitycollector"))
+        )
+        links_layout.addWidget(github_btn)
+
+        # docs_btn = QPushButton("Documentation")
+        # docs_btn.setProperty("secondary", True)
+        # docs_btn.setFixedWidth(120)
+        # docs_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        # docs_btn.clicked.connect(
+        #     lambda: QDesktopServices.openUrl(QUrl("https://github.com/scottpeterman/velocitycollector#readme"))
+        # )
+        # links_layout.addWidget(docs_btn)
+
+        linkedin_btn = QPushButton("LinkedIn")
+        linkedin_btn.setProperty("secondary", True)
+        linkedin_btn.setFixedWidth(100)
+        linkedin_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        linkedin_btn.clicked.connect(
+            lambda: QDesktopServices.openUrl(QUrl("https://www.linkedin.com/in/scott-peterman-networkeng"))
+        )
+        links_layout.addWidget(linkedin_btn)
+
+        links_layout.addStretch()
+
+        layout.addLayout(links_layout)
+
+        # Spacer
+        layout.addSpacing(16)
+
+        # Copyright
+        copyright_label = QLabel(f"© 2024-2025 {__author__}  •  GPLv3 License")
+        copyright_label.setStyleSheet("font-size: 11px; color: gray;")
+        copyright_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        copyright_label.setFixedHeight(18)
+        layout.addWidget(copyright_label)
+
+        # Spacer
+        layout.addSpacing(8)
+
+        # Close button
+        close_btn = QPushButton("Close")
+        close_btn.setFixedWidth(100)
+        close_btn.setFixedHeight(32)
+        close_btn.clicked.connect(self.accept)
+
+        btn_layout = QHBoxLayout()
+        btn_layout.addStretch()
+        btn_layout.addWidget(close_btn)
+        btn_layout.addStretch()
+        layout.addLayout(btn_layout)
 
 
 class NavigationItem(QListWidgetItem):
@@ -268,6 +421,9 @@ class VelocityCollectorGUI(QMainWindow):
         help_menu = menubar.addMenu("&Help")
 
         docs_action = QAction("Documentation", self)
+        docs_action.triggered.connect(
+            lambda: QDesktopServices.openUrl(QUrl("https://github.com/scottpeterman/velocitycollector#readme"))
+        )
         help_menu.addAction(docs_action)
 
         help_menu.addSeparator()
@@ -399,23 +555,8 @@ class VelocityCollectorGUI(QMainWindow):
 
     def show_about(self):
         """Show about dialog."""
-        QMessageBox.about(
-            self,
-            "About VelocityCollector",
-            "<h2>VelocityCollector</h2>"
-            "<p>Network data collection with encrypted vault and TextFSM validation.</p>"
-            "<p><b>Version:</b> 0.3.0</p>"
-            "<p><b>Author:</b> Scott Peterman</p>"
-            "<p><b>License:</b> MIT</p>"
-            "<hr>"
-            "<p>Features:</p>"
-            "<ul>"
-            "<li>Device inventory from VelocityCMDB</li>"
-            "<li>Encrypted credential vault</li>"
-            "<li>TextFSM output validation</li>"
-            "<li>Concurrent collection execution</li>"
-            "</ul>"
-        )
+        dialog = AboutDialog(self)
+        dialog.exec()
 
     def closeEvent(self, event):
         """Handle window close."""
