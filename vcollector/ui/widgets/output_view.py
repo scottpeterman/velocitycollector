@@ -4,6 +4,7 @@ VelocityCollector Output View
 Browse captured output files organized by capture type.
 View file contents, open externally, manage captured data.
 Search within and across capture files.
+Smart Export: Parse with TextFSM and export to JSON/CSV.
 """
 
 from PyQt6.QtWidgets import (
@@ -24,6 +25,18 @@ import os
 import subprocess
 import platform
 import re
+
+# Smart Export integration
+SMART_EXPORT_AVAILABLE = False
+try:
+    from vcollector.ui.widgets.smart_export_dialog import SmartExportDialog
+    SMART_EXPORT_AVAILABLE = True
+except ImportError:
+    try:
+        from smart_export_dialog import SmartExportDialog
+        SMART_EXPORT_AVAILABLE = True
+    except ImportError:
+        pass
 
 
 @dataclass
@@ -128,6 +141,10 @@ class SearchWorker(QThread):
         self.finished_search.emit(total_matches)
 
 
+# Need to import for find functionality
+from PyQt6.QtGui import QTextDocument
+
+
 class FileViewerDialog(QDialog):
     """Dialog to view file contents with optional search highlighting."""
 
@@ -218,6 +235,13 @@ class FileViewerDialog(QDialog):
         open_folder_btn = QPushButton("Open Folder")
         open_folder_btn.clicked.connect(self._open_folder)
         button_layout.addWidget(open_folder_btn)
+
+        # Smart Export button in viewer
+        if SMART_EXPORT_AVAILABLE:
+            smart_export_btn = QPushButton("🔧 Smart Export")
+            smart_export_btn.setToolTip("Parse with TextFSM and export to JSON/CSV")
+            smart_export_btn.clicked.connect(self._open_smart_export)
+            button_layout.addWidget(smart_export_btn)
 
         button_layout.addStretch()
 
@@ -334,9 +358,30 @@ class FileViewerDialog(QDialog):
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to open folder: {e}")
 
+    def _open_smart_export(self):
+        """Open Smart Export dialog for this file."""
+        if not SMART_EXPORT_AVAILABLE:
+            QMessageBox.warning(
+                self, "Not Available",
+                "Smart Export is not available.\n\n"
+                "Ensure smart_export_dialog.py is in the widgets folder."
+            )
+            return
 
-# Need to import for find functionality
-from PyQt6.QtGui import QTextDocument
+        # Try to detect capture type from path
+        capture_type = ""
+        parent_name = self.filepath.parent.name
+        if parent_name in ['arp', 'mac', 'configs', 'routes', 'lldp', 'inventory',
+                           'version', 'bgp-summary', 'bgp-neighbor', 'interface-status',
+                           'int-status', 'ospf-neighbor', 'ntp-status', 'port-channel']:
+            capture_type = parent_name
+
+        dialog = SmartExportDialog(
+            filepath=self.filepath,
+            capture_type=capture_type,
+            parent=self
+        )
+        dialog.exec()
 
 
 class OutputView(QWidget):
@@ -604,6 +649,48 @@ class OutputView(QWidget):
         QShortcut(QKeySequence("Ctrl+C"), self, self._copy_path)
         QShortcut(QKeySequence("Ctrl+F"), self, lambda: self.content_search.setFocus())
         QShortcut(QKeySequence("Escape"), self, self._clear_search_results)
+        # Smart Export shortcut
+        QShortcut(QKeySequence("Ctrl+E"), self, self._smart_export_selected)
+
+    # =========================================================================
+    # SMART EXPORT METHODS
+    # =========================================================================
+
+    def _smart_export_selected(self):
+        """Open Smart Export dialog for selected file."""
+        if not SMART_EXPORT_AVAILABLE:
+            QMessageBox.warning(
+                self, "Not Available",
+                "Smart Export is not available.\n\n"
+                "Ensure smart_export_dialog.py is in the widgets folder."
+            )
+            return
+
+        selected = self.files_table.selectedItems()
+        if not selected:
+            QMessageBox.information(
+                self, "No Selection",
+                "Please select a file to export.\n\n"
+                "Tip: Use Ctrl+E as a shortcut for Smart Export."
+            )
+            return
+
+        row = selected[0].row()
+        filepath = self.files_table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+
+        if not filepath:
+            return
+
+        # Get capture type from the table (column 4 is TYPE)
+        type_item = self.files_table.item(row, 4)
+        capture_type = type_item.text().lower() if type_item else ""
+
+        dialog = SmartExportDialog(
+            filepath=Path(filepath),
+            capture_type=capture_type,
+            parent=self
+        )
+        dialog.exec()
 
     # =========================================================================
     # SEARCH METHODS
@@ -808,7 +895,7 @@ class OutputView(QWidget):
         return filtered
 
     # =========================================================================
-    # EXISTING METHODS (abbreviated - keep your original implementations)
+    # EXISTING METHODS
     # =========================================================================
 
     def _create_stat_card(self, label: str, value: str, color: Optional[str] = None) -> QFrame:
@@ -992,6 +1079,14 @@ class OutputView(QWidget):
 
         menu.addSeparator()
 
+        # Smart Export action
+        if SMART_EXPORT_AVAILABLE:
+            smart_export_action = QAction("🔧 Smart Export (Parse && Export)", self)
+            smart_export_action.setShortcut("Ctrl+E")
+            smart_export_action.triggered.connect(self._smart_export_selected)
+            menu.addAction(smart_export_action)
+            menu.addSeparator()
+
         open_external = QAction("Open External", self)
         open_external.triggered.connect(self._open_selected_external)
         menu.addAction(open_external)
@@ -1127,8 +1222,43 @@ class OutputView(QWidget):
 
     def _clear_capture_type(self):
         """Clear all files for selected capture type."""
-        # Implementation from your original file
-        pass  # Keep your existing implementation
+        selected_type = self.type_filter.currentText()
+        if not selected_type or selected_type == "All Types":
+            QMessageBox.information(
+                self, "Select Type",
+                "Please select a specific capture type to clear."
+            )
+            return
+
+        # Count files
+        type_files = [f for f in self._files if f.capture_type == selected_type]
+        if not type_files:
+            QMessageBox.information(
+                self, "No Files",
+                f"No files found for capture type '{selected_type}'."
+            )
+            return
+
+        # Confirm
+        reply = QMessageBox.question(
+            self,
+            "Confirm Clear",
+            f"Delete all {len(type_files)} files for capture type '{selected_type}'?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+
+        if reply == QMessageBox.StandardButton.Yes:
+            deleted = 0
+            for f in type_files:
+                try:
+                    f.filepath.unlink()
+                    deleted += 1
+                except Exception as e:
+                    pass  # Continue on error
+
+            self.refresh_files()
+            self.status_label.setText(f"Deleted {deleted} files from '{selected_type}'")
 
 
 # For standalone testing

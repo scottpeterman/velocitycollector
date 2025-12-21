@@ -129,6 +129,7 @@ class ExecutionResult:
     error_traceback: Optional[str] = None
     retry_count: int = 0
     disconnect_error: Optional[str] = None  # Capture disconnect errors separately
+    credential_name: Optional[str] = None  # Which credential was used (for per-device creds)
 
     def __repr__(self) -> str:
         if self.success:
@@ -266,12 +267,16 @@ class SSHExecutorPool:
 
                     logger.error(f"Unexpected executor error for {host}: {e}", exc_info=self.options.debug)
 
+                    # Get credential_name from extra_data if available
+                    cred_name = extra_data.get('credential_name') if isinstance(extra_data, dict) else None
+
                     result = ExecutionResult(
                         host=host,
                         success=False,
                         error=f"Executor error: {e}",
                         error_category=error_cat,
                         error_traceback=tb,
+                        credential_name=cred_name,
                     )
 
                 result_map[idx] = result
@@ -373,6 +378,7 @@ class SSHExecutorPool:
         start_time = time.time()
         client = None
         disconnect_error = None
+        credential_name = None  # Track which credential was used
 
         logger.debug(f"{host}: Starting SSH connection")
 
@@ -380,6 +386,7 @@ class SSHExecutorPool:
         creds = self.credentials
         if extra_data and extra_data.get('credentials'):
             creds = extra_data['credentials']
+            credential_name = extra_data.get('credential_name')  # May be set by runner
             logger.debug(f"{host}: Using per-device credential")
 
         try:
@@ -432,6 +439,7 @@ class SSHExecutorPool:
                 duration_ms=duration_ms,
                 prompt_detected=detected_prompt,
                 error_category=SSHErrorCategory.SUCCESS,
+                credential_name=credential_name,
             )
 
         except Exception as e:
@@ -448,6 +456,7 @@ class SSHExecutorPool:
                 duration_ms=duration_ms,
                 error_category=error_category,
                 error_traceback=error_traceback,
+                credential_name=credential_name,
             )
 
         finally:

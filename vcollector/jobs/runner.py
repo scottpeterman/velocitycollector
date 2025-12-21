@@ -22,7 +22,7 @@ import traceback
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, List, Dict, Any, Callable, Union
+from typing import Optional, List, Dict, Any, Callable, Union, Tuple
 
 from vcollector.core.config import get_config
 from vcollector.vault.models import SSHCredentials
@@ -210,7 +210,7 @@ class JobRunner:
         self._validation_engine = None
         self._jobs_repo = None
         self._dcim_repo = None
-        self._credential_cache: Dict[int, SSHCredentials] = {}  # Cache for per-device creds
+        self._credential_cache: Dict[int, Tuple[SSHCredentials, str]] = {}  # Cache: id -> (SSHCredentials, name)
 
         # Configure logging based on debug flag
         if debug:
@@ -268,7 +268,7 @@ class JobRunner:
                 raise
         return self._dcim_repo
 
-    def _get_device_credentials(self, device: Dict[str, Any]) -> Optional[SSHCredentials]:
+    def _get_device_credentials(self, device: Dict[str, Any]) -> Tuple[Optional[SSHCredentials], Optional[str]]:
         """
         Get credentials for a specific device.
 
@@ -279,14 +279,15 @@ class JobRunner:
             device: Device dict with 'credential_id' key
 
         Returns:
-            SSHCredentials if device has specific credential, None otherwise
+            Tuple of (SSHCredentials, credential_name) if device has specific credential,
+            (None, None) otherwise
         """
         if not self.credential_resolver:
-            return None
+            return None, None
 
         credential_id = device.get('credential_id')
         if not credential_id:
-            return None
+            return None, None
 
         # Check cache first
         if credential_id in self._credential_cache:
@@ -299,19 +300,21 @@ class JobRunner:
                 for cred in all_creds:
                     ssh_creds = self.credential_resolver.get_ssh_credentials(credential_name=cred.name)
                     if ssh_creds:
-                        self._credential_cache[cred.id] = ssh_creds
+                        # Cache tuple of (SSHCredentials, name)
+                        self._credential_cache[cred.id] = (ssh_creds, cred.name)
                 logger.debug(f"Loaded {len(self._credential_cache)} credentials into cache")
             except Exception as e:
                 logger.warning(f"Failed to load credentials: {e}")
-                return None
+                return None, None
 
         # Look up from cache
         if credential_id in self._credential_cache:
             device_name = device.get('name', device.get('primary_ip4', '?'))
-            logger.debug(f"{device_name}: Using credential_id={credential_id}")
-            return self._credential_cache[credential_id]
+            creds, cred_name = self._credential_cache[credential_id]
+            logger.debug(f"{device_name}: Using credential '{cred_name}' (id={credential_id})")
+            return creds, cred_name
 
-        return None
+        return None, None
 
     def run(
         self,
@@ -567,9 +570,10 @@ class JobRunner:
                 extra_data = dict(d)  # Copy device data
 
                 # Add per-device credentials if available
-                device_creds = self._get_device_credentials(d)
+                device_creds, cred_name = self._get_device_credentials(d)
                 if device_creds:
                     extra_data['credentials'] = device_creds
+                    extra_data['credential_name'] = cred_name
 
                 targets.append((d['primary_ip4'], command_string, extra_data))
 

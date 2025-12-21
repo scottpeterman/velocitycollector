@@ -19,6 +19,7 @@ VelocityCollector provides:
 - **NetBox-compatible inventory** — Familiar data model, optional sync capability
 - **Vendor-neutral collection** — SSH-based, platform-aware command execution
 - **TextFSM validation** — Structured output parsing with quality scoring
+- **Smart Export** — Auto-detect templates and export parsed data to JSON/CSV
 - **Content search** — Regex-powered search across all collected outputs
 
 ## Screenshots
@@ -41,6 +42,10 @@ VelocityCollector provides:
 
 ![Search Viewer](screenshots/search_viewer.png)
 *File viewer with match highlighting and navigation*
+
+### Smart Export
+![Smart Export](screenshots/smart_export.png)
+*Auto-detect TextFSM templates and export structured data to JSON/CSV*
 
 ### TextFSM Template Tools
 ![Manual Test](screenshots/tfsm_manual.png)
@@ -141,7 +146,7 @@ Supported credential types:
 - SSH private key (with optional passphrase)
 - Combined password + key for privilege escalation
 
-### Per-Device Credentials ✅ NEW
+### Per-Device Credentials ✅
 
 Network environments often have fragmented credentials — legacy devices, acquisitions, different teams. VelocityCollector supports automatic credential discovery and per-device assignment:
 
@@ -191,7 +196,7 @@ Multi-threaded SSH execution with per-device credential support:
 
 ### Output Browser ✅
 
-Full-featured captured data browser:
+Full-featured captured data browser with Smart Export:
 
 | Feature | Status | Description |
 |---------|--------|-------------|
@@ -200,7 +205,32 @@ Full-featured captured data browser:
 | **Regex Support** | ✅ Complete | Pattern matching with case sensitivity toggle |
 | **Search Results** | ✅ Complete | Shows device, type, line number, match context |
 | **File Viewer** | ✅ Complete | Full file view with Find/Prev/Next navigation |
+| **Smart Export** | ✅ Complete | Auto-detect TextFSM templates, export JSON/CSV |
 | **External Tools** | ✅ Complete | Copy All, Open External Editor, Open Folder |
+
+### Smart Export ✅ NEW
+
+Transform raw CLI output into structured data with automatic template matching:
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **Auto-Detect** | ✅ Complete | Automatically finds best matching TextFSM template |
+| **Filter Hints** | ✅ Complete | Type vendor/command hints to narrow template search |
+| **Manual Selection** | ✅ Complete | Browse and select from all templates in database |
+| **Live Preview** | ✅ Complete | Table preview of parsed records with field headers |
+| **Export JSON** | ✅ Complete | Full export with metadata (source, template, timestamp) |
+| **Export CSV** | ✅ Complete | Spreadsheet-ready format with optional headers |
+| **Copy to Clipboard** | ✅ Complete | Quick JSON copy for pasting into other tools |
+
+**Access Smart Export:**
+- Right-click file in Output Browser → **Smart Export**
+- Keyboard shortcut: **Ctrl+E**
+- From File Viewer → **Smart Export** button
+
+**Complete Data Pipeline:**
+```
+Collect (vcollector run) → Browse (Output View) → Parse (Smart Export) → Export (JSON/CSV)
+```
 
 ### TextFSM Tools ✅
 
@@ -242,7 +272,7 @@ Generates `coverage_report.html` showing:
 | **Credentials** | ✅ Complete | Add/edit/delete, password + SSH key, default selection |
 | **Vault** | ✅ Complete | Lock/unlock, change password, export/import, reset |
 | **History** | ✅ Complete | Job execution history browser |
-| **Output** | ✅ Complete | File browser with content search and viewer |
+| **Output** | ✅ Complete | File browser with content search, Smart Export |
 
 ## Installation
 
@@ -395,13 +425,17 @@ Navigate to **Run**:
 4. Enter vault password (or set `VCOLLECTOR_VAULT_PASS` env var)
 5. Watch real-time progress with credential info per device
 
-### 8. View Results
+### 8. View Results & Export Data
 
 Navigate to **Output**:
 
 - Browse files by capture type, device, or time range
 - Search content across all files (supports regex)
 - Click results to open file viewer with match highlighting
+- **Smart Export**: Right-click → Smart Export (or Ctrl+E)
+  - Auto-detects best TextFSM template
+  - Preview parsed data in table
+  - Export to JSON or CSV
 - Use **Copy All**, **Open External**, or **Open Folder** for further work
 
 Output saved to:
@@ -583,12 +617,13 @@ vcollector/
 │       ├── history_view.py
 │       ├── job_dialogs.py
 │       ├── jobs_view.py
-│       ├── output_view.py
+│       ├── output_view.py       # Smart Export integration
 │       ├── platform_dialogs.py
 │       ├── platforms_view.py
 │       ├── run_view.py          # Per-device creds checkbox
 │       ├── site_dialogs.py
 │       ├── sites_view.py
+│       ├── smart_export_dialog.py  # TextFSM parsing & export
 │       ├── stat_cards.py
 │       └── vault_view.py
 ├── validation/
@@ -667,13 +702,22 @@ logging:
 - [x] Coverage stat card and filter
 - [x] Runner integration with per-device creds
 
-### v0.5 — Integration (Planned)
+### v0.5 — Smart Export & Data Pipeline ✅
+- [x] Smart Export dialog with auto-detect
+- [x] TextFSM template matching with scoring
+- [x] Live preview of parsed results
+- [x] JSON export with metadata
+- [x] CSV export for spreadsheets
+- [x] Integration with Output Browser
+
+### v0.6 — Integration (Planned)
 - [ ] NetBox API sync (import devices)
 - [ ] Scheduled collection (cron-like)
 - [ ] Config diff detection
 - [ ] Email notifications
 - [ ] CSV import for devices
 - [ ] Job builder wizard
+- [ ] Batch Smart Export (multiple files)
 
 ### Future
 - [ ] SNMP collection support
