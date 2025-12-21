@@ -92,7 +92,8 @@ THEMES = {
         "nav_hover": "#00d4ff20",
         "accent_gradient_start": "#00d4ff",
         "accent_gradient_end": "#00F5C4",
-    }
+    },
+
 }
 
 
@@ -664,5 +665,53 @@ def get_stylesheet(theme_name: str) -> str:
             border-radius: 6px;
             padding: 8px 12px;
             font-size: 12px;
+        }}
+        /* ===== LIST WIDGET ===== */
+        QListWidget {{
+            background-color: {t['surface_bg']};
+            color: {t['text']};
+            border: 1px solid {t['border']};
+            border-radius: 8px;
+            outline: none;
+            padding: 4px;
+        }}
+
+        QListWidget::item {{
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 2px;
+        }}
+
+        QListWidget::item:hover {{
+            background-color: {t['nav_hover']};
+        }}
+
+        QListWidget::item:selected {{
+            background-color: {t['selection']};
+        }}
+
+        QListWidget::item:alternate {{
+            background-color: {t['table_alt_row']};
+        }}
+        
+    # Add this to styles.py after the existing QPushButton[success="true"] section
+# (around line 280, after the success button hover style)
+
+        /* ===== FLAT/SECONDARY BUTTONS ===== */
+        QPushButton[flat="true"] {{
+            background-color: {t['surface_alt']};
+            color: {t['text']};
+            border: 1px solid {t['input_border']};
+            font-weight: 500;
+        }}
+
+        QPushButton[flat="true"]:hover {{
+            background-color: {t['nav_hover']};
+            border-color: {t['primary']};
+            color: {t['text']};
+        }}
+
+        QPushButton[flat="true"]:pressed {{
+            background-color: {t['selection']};
         }}
     """
