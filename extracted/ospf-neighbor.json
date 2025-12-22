@@ -1,0 +1,107 @@
+{
+  "capture_type": "ospf-neighbor",
+  "extracted_at": "2025-12-22T06:18:26.508037",
+  "total_devices": 3,
+  "total_records": 9,
+  "devices": {
+    "wan-core-1": {
+      "template": "cisco_asa_show_ospf_neighbor",
+      "score": 80.0,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 2,
+      "records": [
+        {
+          "NEIGHBOR_ID": "172.16.2.1",
+          "PRIORITY": "1",
+          "STATE": "FULL/BDR",
+          "DEAD_TIME": "00:00:38",
+          "IP_ADDRESS": "172.16.128.2",
+          "INTERFACE": "Ethernet1/2"
+        },
+        {
+          "NEIGHBOR_ID": "172.16.1.1",
+          "PRIORITY": "1",
+          "STATE": "FULL/BDR",
+          "DEAD_TIME": "00:00:34",
+          "IP_ADDRESS": "172.16.100.2",
+          "INTERFACE": "Ethernet1/1"
+        }
+      ]
+    },
+    "eng-rtr-1": {
+      "template": "cisco_asa_show_ospf_neighbor",
+      "score": 81.43,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 4,
+      "records": [
+        {
+          "NEIGHBOR_ID": "172.16.22.22",
+          "PRIORITY": "1",
+          "STATE": "FULL/BDR",
+          "DEAD_TIME": "00:00:36",
+          "IP_ADDRESS": "172.16.2.6",
+          "INTERFACE": "GigabitEthernet0/3"
+        },
+        {
+          "NEIGHBOR_ID": "172.16.21.21",
+          "PRIORITY": "1",
+          "STATE": "FULL/BDR",
+          "DEAD_TIME": "00:00:34",
+          "IP_ADDRESS": "172.16.2.2",
+          "INTERFACE": "GigabitEthernet0/2"
+        },
+        {
+          "NEIGHBOR_ID": "172.16.128.1",
+          "PRIORITY": "1",
+          "STATE": "FULL/DR",
+          "DEAD_TIME": "00:00:33",
+          "IP_ADDRESS": "172.16.128.1",
+          "INTERFACE": "GigabitEthernet0/1"
+        },
+        {
+          "NEIGHBOR_ID": "172.16.1.1",
+          "PRIORITY": "1",
+          "STATE": "FULL/BDR",
+          "DEAD_TIME": "00:00:33",
+          "IP_ADDRESS": "172.16.128.5",
+          "INTERFACE": "GigabitEthernet0/0"
+        }
+      ]
+    },
+    "usa-rtr-1": {
+      "template": "cisco_asa_show_ospf_neighbor",
+      "score": 80.0,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 3,
+      "records": [
+        {
+          "NEIGHBOR_ID": "172.16.2.1",
+          "PRIORITY": "1",
+          "STATE": "FULL/DR",
+          "DEAD_TIME": "00:00:33",
+          "IP_ADDRESS": "172.16.128.6",
+          "INTERFACE": "GigabitEthernet0/3"
+        },
+        {
+          "NEIGHBOR_ID": "172.16.1.6",
+          "PRIORITY": "1",
+          "STATE": "FULL/BDR",
+          "DEAD_TIME": "00:00:36",
+          "IP_ADDRESS": "172.16.1.6",
+          "INTERFACE": "GigabitEthernet0/2"
+        },
+        {
+          "NEIGHBOR_ID": "172.16.128.1",
+          "PRIORITY": "1",
+          "STATE": "FULL/DR",
+          "DEAD_TIME": "00:00:33",
+          "IP_ADDRESS": "172.16.100.1",
+          "INTERFACE": "GigabitEthernet0/0"
+        }
+      ]
+    }
+  }
+}

@@ -937,6 +937,45 @@ class JobRunner:
         # Fallback: return as-is if we can't find the command
         return raw_output
 
+    def _record_capture(
+            self,
+            device: Dict[str, Any],
+            filepath: Path,
+            file_size: int,
+            capture_type: str,
+            job_history_id: Optional[int] = None,
+    ) -> None:
+        """Record a capture to the captures table in collector.db."""
+        try:
+            collector_db = self.config.collector_db
+
+            conn = sqlite3.connect(str(collector_db))
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                INSERT INTO captures (
+                    device_id, device_name, capture_type, filepath, 
+                    file_size, captured_at, job_history_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                device.get('id'),
+                device.get('normalized_name') or device.get('name'),
+                capture_type,
+                str(filepath),
+                file_size,
+                datetime.now().isoformat(),
+                job_history_id,
+            ))
+
+            conn.commit()
+            conn.close()
+
+            logger.debug(f"Recorded capture: {filepath}")
+
+        except Exception as e:
+            logger.warning(f"Failed to record capture to database: {e}")
+            # Don't fail the job if DB record fails - file is already saved
+
     def _process_results(
         self,
         job: Dict[str, Any],
@@ -1054,6 +1093,13 @@ class JobRunner:
             if not self.no_save:
                 try:
                     filepath = self._save_output(device, cleaned_output, job)
+                    self._record_capture(
+                        device=device,
+                        filepath=filepath,
+                        file_size=len(cleaned_output),
+                        capture_type=job.get('capture_type', 'unknown'),
+                        job_history_id=history_id,
+                    )
                     # Get the score (0 if validation was skipped or failed)
                     score = 0.0
                     if validation_result and not validation_failed:

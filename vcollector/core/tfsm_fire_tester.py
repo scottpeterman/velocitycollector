@@ -17,6 +17,7 @@ import sys
 import json
 import sqlite3
 import hashlib
+import traceback
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, List, Dict, Any
@@ -109,8 +110,24 @@ class NTCDownloadWorker(QThread):
         super().__init__()
         self.platforms = platforms
         self.db_path = db_path
+        # self.db_path = db_path
         self.replace = replace
         self.templates_to_download = []
+
+    def _find_database(self) -> str:
+        """Find tfsm_templates.db in standard locations (OS-independent)."""
+        db_search_paths = [
+            Path.home() / ".vcollector" / "tfsm_templates.db",  # Primary location
+            Path.home() / ".vcollector" / "data" / "tfsm_templates.db",
+        ]
+
+        for path in db_search_paths:
+            if path.is_file():  # Must be a file, not directory
+                return str(path)
+
+        # Return default (primary location) even if not found yet
+        return str(Path.home() / ".vcollector" / "tfsm_templates.db")
+
 
     def run(self):
         try:
@@ -138,6 +155,7 @@ class NTCDownloadWorker(QThread):
 
             # Connect to database
             conn = sqlite3.connect(self.db_path)
+            print(f"db_path: {self.db_path}")
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS templates (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -195,6 +213,8 @@ class NTCDownloadWorker(QThread):
                     self.progress.emit(i, total, f"{status} {cli_command}")
 
                 except Exception as e:
+                    traceback.print_exc()
+
                     stats['errors'] += 1
                     self.progress.emit(i, total, f"E {cli_command}: {str(e)[:30]}")
 
@@ -203,6 +223,8 @@ class NTCDownloadWorker(QThread):
             self.finished.emit(stats)
 
         except Exception as e:
+            traceback.print_exc()
+
             self.error.emit(str(e))
 
 
@@ -333,6 +355,8 @@ class NTCDownloadDialog(QDialog):
             self.download_btn.setEnabled(True)
 
         except Exception as e:
+            traceback.print_exc()
+
             QMessageBox.critical(self, "Error", f"Failed to fetch platforms:\n{str(e)}")
             self.status_label.setText("Fetch failed")
 
@@ -594,7 +618,6 @@ def get_stylesheet(theme_name: str) -> str:
 
         QPushButton[danger="true"]:hover {{
             background-color: {t['error']};
-            filter: brightness(1.1);
         }}
 
         QLineEdit, QSpinBox {{
@@ -884,6 +907,7 @@ class TemplateTestWorker(QThread):
                 template_content or ""
             )
         except Exception as e:
+            traceback.print_exc()
             self.error_occurred.emit(str(e))
 
 
@@ -903,6 +927,8 @@ class ManualTestWorker(QThread):
             headers = template.header
             self.results_ready.emit(headers, parsed, "")
         except Exception as e:
+            traceback.print_exc()
+
             self.results_ready.emit([], [], str(e))
 
 
@@ -1002,6 +1028,8 @@ End""")
         try:
             textfsm.TextFSM(io.StringIO(self.textfsm_content.toPlainText()))
         except Exception as e:
+            traceback.print_exc()
+
             return False, f"Invalid TextFSM template: {str(e)}"
 
         return True, ""
@@ -1025,11 +1053,25 @@ class TextFSMTester(QMainWindow):
         self.setGeometry(100, 100, 1400, 900)
 
         # Settings
-        self.db_path = "tfsm_templates.db"
+        self.db_path = self._find_database()
         self.current_theme = "dark"
 
         self.init_ui()
         self.apply_theme(self.current_theme)
+
+    def _find_database(self) -> str:
+        """Find tfsm_templates.db in standard locations (OS-independent)."""
+        db_search_paths = [
+            Path.home() / ".vcollector" / "tfsm_templates.db",  # Primary location
+            Path.home() / ".vcollector" / "data" / "tfsm_templates.db",
+        ]
+
+        for path in db_search_paths:
+            if path.is_file():  # Must be a file, not directory
+                return str(path)
+
+        # Return default (primary location) even if not found yet
+        return str(Path.home() / ".vcollector" / "tfsm_templates.db")
 
     def init_ui(self):
         # Central widget
@@ -1496,17 +1538,48 @@ Start
                 self.statusBar().showMessage(f"Created new database: {file_path}")
                 QMessageBox.information(self, "Success", f"Created new database: {file_path}")
             except Exception as e:
+                traceback.print_exc()
+
                 QMessageBox.critical(self, "Error", f"Failed to create database: {str(e)}")
 
     def get_db_connection(self) -> Optional[sqlite3.Connection]:
-        db_path = self.db_path_input.text()
-        if not Path(db_path).exists():
-            QMessageBox.warning(self, "Warning", f"Database not found: {db_path}")
+        """Get database connection."""
+        import traceback
+
+        # Always use the current value from the input field
+        db_path = Path(self.db_path_input.text().strip())
+
+        # Update self.db_path to match
+        self.db_path = str(db_path)
+
+        if not db_path.exists():
+            QMessageBox.warning(
+                self, "Database Not Found",
+                f"Database file not found:\n{db_path}\n\n"
+                f"Use 'New DB' to create one or 'Browse' to locate an existing database."
+            )
             return None
 
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        return conn
+        if db_path.is_dir():
+            QMessageBox.warning(
+                self, "Invalid Path",
+                f"Path is a DIRECTORY, not a file:\n{db_path}\n\n"
+                f"Please select the actual .db file, not a folder."
+            )
+            return None
+
+        try:
+            conn = sqlite3.connect(str(db_path))
+            conn.row_factory = sqlite3.Row
+            return conn
+        except Exception as e:
+            tb = traceback.format_exc()
+            print(f"[DB Connection Error] {db_path}\n{tb}", file=sys.stderr)
+            QMessageBox.critical(
+                self, "Database Error",
+                f"Failed to open database:\n{db_path}\n\nError: {e}"
+            )
+            return None
 
     # =========================================================================
     # DATABASE TEST TAB
@@ -1676,6 +1749,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
                     json.dump(self._db_parsed_data, f, indent=2)
                 self.statusBar().showMessage(f"Exported {len(self._db_parsed_data)} records to {file_path}")
             except Exception as e:
+                traceback.print_exc()
+
                 QMessageBox.critical(self, "Error", f"Export failed: {str(e)}")
 
     def export_db_results_csv(self):
@@ -1703,6 +1778,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
                     writer.writerows(self._db_parsed_data)
                 self.statusBar().showMessage(f"Exported {len(self._db_parsed_data)} records to {file_path}")
             except Exception as e:
+                traceback.print_exc()
+
                 QMessageBox.critical(self, "Error", f"Export failed: {str(e)}")
 
     # =========================================================================
@@ -1719,6 +1796,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
                     self.manual_template_text.setPlainText(f.read())
                 self.statusBar().showMessage(f"Loaded template: {file_path}")
             except Exception as e:
+                traceback.print_exc()
+
                 QMessageBox.critical(self, "Error", f"Failed to load file: {str(e)}")
 
     def load_output_file(self):
@@ -1731,6 +1810,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
                     self.manual_output_text.setPlainText(f.read())
                 self.statusBar().showMessage(f"Loaded output: {file_path}")
             except Exception as e:
+                traceback.print_exc()
+
                 QMessageBox.critical(self, "Error", f"Failed to load file: {str(e)}")
 
     def load_sample_template(self):
@@ -1815,6 +1896,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
                     json.dump(results, f, indent=2)
                 self.statusBar().showMessage(f"Exported to {file_path}")
             except Exception as e:
+                traceback.print_exc()
+
                 QMessageBox.critical(self, "Error", f"Export failed: {str(e)}")
 
     def export_manual_results_csv(self):
@@ -1834,6 +1917,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
                     writer.writerows(self._manual_data)
                 self.statusBar().showMessage(f"Exported to {file_path}")
             except Exception as e:
+                traceback.print_exc()
+
                 QMessageBox.critical(self, "Error", f"Export failed: {str(e)}")
 
     def save_manual_template_to_db(self):
@@ -1846,6 +1931,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
         try:
             textfsm.TextFSM(io.StringIO(template_content))
         except Exception as e:
+            traceback.print_exc()
+
             QMessageBox.critical(self, "Error", f"Invalid template: {str(e)}")
             return
 
@@ -1873,6 +1960,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
                     QMessageBox.information(self, "Success", f"Template '{name}' saved to database")
                     self.load_all_templates()
                 except Exception as e:
+                    traceback.print_exc()
+
                     QMessageBox.critical(self, "Error", f"Failed to save: {str(e)}")
 
     # =========================================================================
@@ -1904,6 +1993,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
             self._all_templates = templates
 
         except Exception as e:
+            traceback.print_exc()
+
             QMessageBox.critical(self, "Error", f"Failed to load templates: {str(e)}")
 
     def filter_templates(self, text: str):
@@ -1937,6 +2028,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
                 if result:
                     self.mgr_preview_text.setPlainText(result['textfsm_content'])
             except Exception as e:
+                traceback.print_exc()
+
                 self.mgr_preview_text.setPlainText(f"Error loading preview: {str(e)}")
 
     def show_template_context_menu(self, pos):
@@ -1986,6 +2079,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
                     self.statusBar().showMessage(f"Added template: {data['cli_command']}")
                     self.load_all_templates()
                 except Exception as e:
+                    traceback.print_exc()
+
                     QMessageBox.critical(self, "Error", f"Failed to add template: {str(e)}")
 
     def edit_selected_template(self):
@@ -2031,6 +2126,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
                         self.statusBar().showMessage(f"Updated template: {data['cli_command']}")
                         self.load_all_templates()
             except Exception as e:
+                traceback.print_exc()
+
                 QMessageBox.critical(self, "Error", f"Failed to edit template: {str(e)}")
 
     def delete_selected_template(self):
@@ -2061,6 +2158,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
                     self.statusBar().showMessage(f"Deleted template: {cli_command}")
                     self.load_all_templates()
                 except Exception as e:
+                    traceback.print_exc()
+
                     QMessageBox.critical(self, "Error", f"Failed to delete: {str(e)}")
 
     def duplicate_selected_template(self):
@@ -2099,6 +2198,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
                 self.statusBar().showMessage(f"Duplicated template: {template['cli_command']}")
                 self.load_all_templates()
             except Exception as e:
+                traceback.print_exc()
+
                 QMessageBox.critical(self, "Error", f"Failed to duplicate: {str(e)}")
 
     def test_selected_in_manual(self):
@@ -2122,6 +2223,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
                     self.main_tabs.setCurrentIndex(1)  # Switch to Manual Test tab
                     self.statusBar().showMessage("Template loaded into Manual Test tab")
             except Exception as e:
+                traceback.print_exc()
+
                 QMessageBox.critical(self, "Error", f"Failed to load template: {str(e)}")
 
     def import_from_ntc(self):
@@ -2183,6 +2286,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
                     imported += 1
 
                 except Exception as e:
+                    traceback.print_exc()
+
                     print(f"Error importing {file_path}: {e}")
                     continue
 
@@ -2197,6 +2302,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
             self.load_all_templates()
 
         except Exception as e:
+            traceback.print_exc()
+
             QMessageBox.critical(self, "Error", f"Import failed: {str(e)}")
 
     def download_from_ntc(self):
@@ -2243,6 +2350,8 @@ usa-leaf-1          Eth5           120        R               GigabitEthernet0/0
             QMessageBox.information(self, "Export Complete", f"Exported {exported} templates to {dir_path}")
 
         except Exception as e:
+            traceback.print_exc()
+
             QMessageBox.critical(self, "Error", f"Export failed: {str(e)}")
 
 

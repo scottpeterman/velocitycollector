@@ -1,0 +1,2880 @@
+{
+  "capture_type": "syslog",
+  "extracted_at": "2025-12-22T06:18:26.508037",
+  "total_devices": 9,
+  "total_records": 211,
+  "devices": {
+    "usa-leaf-3": {
+      "template": "cisco_ios_show_logging",
+      "score": 91.94,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 17,
+      "records": [
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:00.252",
+          "TIMEZONE": "",
+          "FACILITY": "ATA",
+          "SEVERITY": "6",
+          "MNEMONIC": "DEV_FOUND",
+          "MESSAGE": [
+            "device 0x1F0"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:00.327",
+          "TIMEZONE": "",
+          "FACILITY": "NVRAM",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_NVRAM_READ_OK",
+          "MESSAGE": [
+            "NVRAM configuration 'flash:/nvram' was read from disk."
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.370",
+          "TIMEZONE": "",
+          "FACILITY": "SPANTREE",
+          "SEVERITY": "5",
+          "MNEMONIC": "EXTENDED_SYSID",
+          "MESSAGE": [
+            "Extended SysId enabled for type vlan"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.172",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_I",
+          "MESSAGE": [
+            "Configured from memory by console"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.198",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "RESTART",
+          "MESSAGE": [
+            "System restarted --",
+            "Cisco IOS Software, vios_l2 Software (vios_l2-ADVENTERPRISEK9-M), Version 15.2(4.0.55)E, TEST ENGINEERING ESTG_WEEKLY BUILD, synced to  END_OF_FLO_ISP",
+            "Technical Support: http://www.cisco.com/techsupport",
+            "Copyright (c) 1986-2015 by Cisco Systems, Inc.",
+            "Compiled Tue 28-Jul-15 18:52 by sasyamal"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.210",
+          "TIMEZONE": "",
+          "FACILITY": "SSH",
+          "SEVERITY": "5",
+          "MNEMONIC": "ENABLED",
+          "MESSAGE": [
+            "SSH 1.99 has been enabled"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.091",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.092",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.092",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/2, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.092",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/3, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.127",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.127",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.127",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/2, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.127",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/3, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:38.519",
+          "TIMEZONE": "",
+          "FACILITY": "PLATFORM",
+          "SEVERITY": "5",
+          "MNEMONIC": "SIGNATURE_VERIFIED",
+          "MESSAGE": [
+            "Image 'flash0:/vios_l2-adventerprisek9-m' passed code signing verification"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:04.330",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Vlan10, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:05.330",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Vlan10, changed state to up"
+          ]
+        }
+      ]
+    },
+    "eng-leaf-2": {
+      "template": "cisco_ios_show_logging",
+      "score": 91.94,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 17,
+      "records": [
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:00.246",
+          "TIMEZONE": "",
+          "FACILITY": "ATA",
+          "SEVERITY": "6",
+          "MNEMONIC": "DEV_FOUND",
+          "MESSAGE": [
+            "device 0x1F0"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:00.323",
+          "TIMEZONE": "",
+          "FACILITY": "NVRAM",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_NVRAM_READ_OK",
+          "MESSAGE": [
+            "NVRAM configuration 'flash:/nvram' was read from disk."
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.375",
+          "TIMEZONE": "",
+          "FACILITY": "SPANTREE",
+          "SEVERITY": "5",
+          "MNEMONIC": "EXTENDED_SYSID",
+          "MESSAGE": [
+            "Extended SysId enabled for type vlan"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.198",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_I",
+          "MESSAGE": [
+            "Configured from memory by console"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.215",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "RESTART",
+          "MESSAGE": [
+            "System restarted --",
+            "Cisco IOS Software, vios_l2 Software (vios_l2-ADVENTERPRISEK9-M), Version 15.2(4.0.55)E, TEST ENGINEERING ESTG_WEEKLY BUILD, synced to  END_OF_FLO_ISP",
+            "Technical Support: http://www.cisco.com/techsupport",
+            "Copyright (c) 1986-2015 by Cisco Systems, Inc.",
+            "Compiled Tue 28-Jul-15 18:52 by sasyamal"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.222",
+          "TIMEZONE": "",
+          "FACILITY": "SSH",
+          "SEVERITY": "5",
+          "MNEMONIC": "ENABLED",
+          "MESSAGE": [
+            "SSH 2.0 has been enabled"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.089",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.090",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.090",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/2, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.090",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/3, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:32.115",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:32.115",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:32.115",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/2, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:32.115",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/3, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:39.417",
+          "TIMEZONE": "",
+          "FACILITY": "PLATFORM",
+          "SEVERITY": "5",
+          "MNEMONIC": "SIGNATURE_VERIFIED",
+          "MESSAGE": [
+            "Image 'flash0:/vios_l2-adventerprisek9-m' passed code signing verification"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:05.327",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Vlan11, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:06.327",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Vlan11, changed state to up"
+          ]
+        }
+      ]
+    },
+    "eng-leaf-3": {
+      "template": "cisco_ios_show_logging",
+      "score": 91.94,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 17,
+      "records": [
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:00.257",
+          "TIMEZONE": "",
+          "FACILITY": "ATA",
+          "SEVERITY": "6",
+          "MNEMONIC": "DEV_FOUND",
+          "MESSAGE": [
+            "device 0x1F0"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:00.330",
+          "TIMEZONE": "",
+          "FACILITY": "NVRAM",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_NVRAM_READ_OK",
+          "MESSAGE": [
+            "NVRAM configuration 'flash:/nvram' was read from disk."
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.374",
+          "TIMEZONE": "",
+          "FACILITY": "SPANTREE",
+          "SEVERITY": "5",
+          "MNEMONIC": "EXTENDED_SYSID",
+          "MESSAGE": [
+            "Extended SysId enabled for type vlan"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.257",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_I",
+          "MESSAGE": [
+            "Configured from memory by console"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.275",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "RESTART",
+          "MESSAGE": [
+            "System restarted --",
+            "Cisco IOS Software, vios_l2 Software (vios_l2-ADVENTERPRISEK9-M), Version 15.2(4.0.55)E, TEST ENGINEERING ESTG_WEEKLY BUILD, synced to  END_OF_FLO_ISP",
+            "Technical Support: http://www.cisco.com/techsupport",
+            "Copyright (c) 1986-2015 by Cisco Systems, Inc.",
+            "Compiled Tue 28-Jul-15 18:52 by sasyamal"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.283",
+          "TIMEZONE": "",
+          "FACILITY": "SSH",
+          "SEVERITY": "5",
+          "MNEMONIC": "ENABLED",
+          "MESSAGE": [
+            "SSH 2.0 has been enabled"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.141",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.141",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.142",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/2, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.142",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/3, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:32.177",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:32.177",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:32.177",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/2, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:32.177",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/3, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:39.388",
+          "TIMEZONE": "",
+          "FACILITY": "PLATFORM",
+          "SEVERITY": "5",
+          "MNEMONIC": "SIGNATURE_VERIFIED",
+          "MESSAGE": [
+            "Image 'flash0:/vios_l2-adventerprisek9-m' passed code signing verification"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:05.388",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Vlan11, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:06.388",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Vlan11, changed state to up"
+          ]
+        }
+      ]
+    },
+    "wan-core-1": {
+      "template": "cisco_ios_show_logging",
+      "score": 91.94,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 46,
+      "records": [
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:20.779",
+          "TIMEZONE": "",
+          "FACILITY": "IFMGR",
+          "SEVERITY": "7",
+          "MNEMONIC": "NO_IFINDEX_FILE",
+          "MESSAGE": [
+            "Unable to open nvram:/ifIndex-table No such file or directory"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.091",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface VoIP-Null0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.099",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface FastEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.107",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Ethernet1/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.115",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Ethernet1/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.123",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Ethernet1/2, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.123",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Ethernet1/3, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.123",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Ethernet2/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.123",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Ethernet2/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.123",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Ethernet2/2, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.123",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Ethernet2/3, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.123",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Ethernet3/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.123",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Ethernet3/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.127",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Ethernet3/2, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.127",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Ethernet3/3, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.587",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_I",
+          "MESSAGE": [
+            "Configured from memory by console"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.699",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "RESTART",
+          "MESSAGE": [
+            "System restarted --",
+            "Cisco IOS Software, 7200 Software (C7200-ADVENTERPRISEK9-M), Version 15.2(4)M11, RELEASE SOFTWARE (fc2)",
+            "Technical Support: http://www.cisco.com/techsupport",
+            "Copyright (c) 1986-2016 by Cisco Systems, Inc.",
+            "Compiled Sun 16-Oct-16 07:53 by prod_rel_team"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.707",
+          "TIMEZONE": "",
+          "FACILITY": "SNMP",
+          "SEVERITY": "5",
+          "MNEMONIC": "COLDSTART",
+          "MESSAGE": [
+            "SNMP agent on host wan-core-1 is undergoing a cold start"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.735",
+          "TIMEZONE": "",
+          "FACILITY": "SSH",
+          "SEVERITY": "5",
+          "MNEMONIC": "ENABLED",
+          "MESSAGE": [
+            "SSH 1.99 has been enabled"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.763",
+          "TIMEZONE": "",
+          "FACILITY": "CRYPTO",
+          "SEVERITY": "6",
+          "MNEMONIC": "ISAKMP_ON_OFF",
+          "MESSAGE": [
+            "ISAKMP is OFF"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:27.763",
+          "TIMEZONE": "",
+          "FACILITY": "CRYPTO",
+          "SEVERITY": "6",
+          "MNEMONIC": "GDOI_ON_OFF",
+          "MESSAGE": [
+            "GDOI is OFF"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.099",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface FastEthernet0/0, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.107",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Ethernet1/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.119",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Ethernet1/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.123",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Ethernet1/2, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.127",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Ethernet1/3, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.127",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Ethernet2/0, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.131",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Ethernet2/1, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.135",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Ethernet2/2, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.139",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Ethernet2/3, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.139",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Ethernet3/0, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.143",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Ethernet3/1, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.147",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Ethernet3/2, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.151",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Ethernet3/3, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.175",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "5",
+          "MNEMONIC": "CHANGED",
+          "MESSAGE": [
+            "Interface FastEthernet0/0, changed state to administratively down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.451",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "5",
+          "MNEMONIC": "CHANGED",
+          "MESSAGE": [
+            "Interface Ethernet1/3, changed state to administratively down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.463",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "5",
+          "MNEMONIC": "CHANGED",
+          "MESSAGE": [
+            "Interface Ethernet2/0, changed state to administratively down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.471",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "5",
+          "MNEMONIC": "CHANGED",
+          "MESSAGE": [
+            "Interface Ethernet2/1, changed state to administratively down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.471",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "5",
+          "MNEMONIC": "CHANGED",
+          "MESSAGE": [
+            "Interface Ethernet2/2, changed state to administratively down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.503",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "5",
+          "MNEMONIC": "CHANGED",
+          "MESSAGE": [
+            "Interface Ethernet2/3, changed state to administratively down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.523",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "5",
+          "MNEMONIC": "CHANGED",
+          "MESSAGE": [
+            "Interface Ethernet3/0, changed state to administratively down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.527",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "5",
+          "MNEMONIC": "CHANGED",
+          "MESSAGE": [
+            "Interface Ethernet3/1, changed state to administratively down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.531",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "5",
+          "MNEMONIC": "CHANGED",
+          "MESSAGE": [
+            "Interface Ethernet3/2, changed state to administratively down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.531",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "5",
+          "MNEMONIC": "CHANGED",
+          "MESSAGE": [
+            "Interface Ethernet3/3, changed state to administratively down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:07.895",
+          "TIMEZONE": "",
+          "FACILITY": "OSPF",
+          "SEVERITY": "5",
+          "MNEMONIC": "ADJCHG",
+          "MESSAGE": [
+            "Process 1, Nbr 172.16.2.1 on Ethernet1/2 from LOADING to FULL, Loading Done"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:07.899",
+          "TIMEZONE": "",
+          "FACILITY": "OSPF",
+          "SEVERITY": "5",
+          "MNEMONIC": "ADJCHG",
+          "MESSAGE": [
+            "Process 1, Nbr 172.16.1.1 on Ethernet1/1 from LOADING to FULL, Loading Done"
+          ]
+        }
+      ]
+    },
+    "eng-rtr-1": {
+      "template": "cisco_ios_show_logging",
+      "score": 91.94,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 31,
+      "records": [
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:00.366",
+          "TIMEZONE": "",
+          "FACILITY": "ATA",
+          "SEVERITY": "6",
+          "MNEMONIC": "DEV_FOUND",
+          "MESSAGE": [
+            "device 0x1F0"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:09.255",
+          "TIMEZONE": "",
+          "FACILITY": "NVRAM",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_NVRAM_READ_OK",
+          "MESSAGE": [
+            "NVRAM configuration 'flash:/nvram' was read from disk."
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:44.722",
+          "TIMEZONE": "",
+          "FACILITY": "PA",
+          "SEVERITY": "3",
+          "MNEMONIC": "PA_INIT_FAILED",
+          "MESSAGE": [
+            "Performance Agent failed to initialize (Missing Data License)"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:45.464",
+          "TIMEZONE": "",
+          "FACILITY": "CVAC",
+          "SEVERITY": "4",
+          "MNEMONIC": "FILE_IGNORED",
+          "MESSAGE": [
+            "Configuration file flash0:/ios_config.txt is ignored : empty file"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:45.522",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_I",
+          "MESSAGE": [
+            "Configured from memory by console"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:45.772",
+          "TIMEZONE": "",
+          "FACILITY": "CVAC",
+          "SEVERITY": "4",
+          "MNEMONIC": "FILE_IGNORED",
+          "MESSAGE": [
+            "Configuration file flash0:/ios_config.txt is ignored : empty file"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:46.034",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:46.034",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:46.034",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/2, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:46.034",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/3, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:46.210",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "RESTART",
+          "MESSAGE": [
+            "System restarted --",
+            "Cisco IOS Software, IOSv Software (VIOS-ADVENTERPRISEK9-M), Version 15.6(2)T, RELEASE SOFTWARE (fc2)",
+            "Technical Support: http://www.cisco.com/techsupport",
+            "Copyright (c) 1986-2016 by Cisco Systems, Inc.",
+            "Compiled Tue 22-Mar-16 16:19 by prod_rel_team"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:46.211",
+          "TIMEZONE": "",
+          "FACILITY": "SNMP",
+          "SEVERITY": "5",
+          "MNEMONIC": "COLDSTART",
+          "MESSAGE": [
+            "SNMP agent on host eng-rtr-1 is undergoing a cold start"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:46.217",
+          "TIMEZONE": "",
+          "FACILITY": "SSH",
+          "SEVERITY": "5",
+          "MNEMONIC": "ENABLED",
+          "MESSAGE": [
+            "SSH 2.0 has been enabled"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:46.221",
+          "TIMEZONE": "",
+          "FACILITY": "CRYPTO",
+          "SEVERITY": "6",
+          "MNEMONIC": "ISAKMP_ON_OFF",
+          "MESSAGE": [
+            "ISAKMP is OFF"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:46.221",
+          "TIMEZONE": "",
+          "FACILITY": "CRYPTO",
+          "SEVERITY": "6",
+          "MNEMONIC": "GDOI_ON_OFF",
+          "MESSAGE": [
+            "GDOI is OFF"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:47.081",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:47.081",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:47.081",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/2, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:47.081",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/3, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:56.463",
+          "TIMEZONE": "",
+          "FACILITY": "PLATFORM",
+          "SEVERITY": "5",
+          "MNEMONIC": "SIGNATURE_VERIFIED",
+          "MESSAGE": [
+            "Image 'flash0:/vios-adventerprisek9-m' passed code signing verification"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:27.084",
+          "TIMEZONE": "",
+          "FACILITY": "OSPF",
+          "SEVERITY": "5",
+          "MNEMONIC": "ADJCHG",
+          "MESSAGE": [
+            "Process 1, Nbr 172.16.1.1 on GigabitEthernet0/0 from LOADING to FULL, Loading Done"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:30.992",
+          "TIMEZONE": "",
+          "FACILITY": "OSPF",
+          "SEVERITY": "5",
+          "MNEMONIC": "ADJCHG",
+          "MESSAGE": [
+            "Process 1, Nbr 172.16.128.1 on GigabitEthernet0/1 from LOADING to FULL, Loading Done"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:50:20.797",
+          "TIMEZONE": "",
+          "FACILITY": "OSPF",
+          "SEVERITY": "5",
+          "MNEMONIC": "ADJCHG",
+          "MESSAGE": [
+            "Process 1, Nbr 172.16.21.21 on GigabitEthernet0/2 from LOADING to FULL, Loading Done"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:50:31.721",
+          "TIMEZONE": "",
+          "FACILITY": "OSPF",
+          "SEVERITY": "5",
+          "MNEMONIC": "ADJCHG",
+          "MESSAGE": [
+            "Process 1, Nbr 172.16.22.22 on GigabitEthernet0/3 from LOADING to FULL, Loading Done"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:56:59.038",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "2",
+          "MNEMONIC": "INTVULN",
+          "MESSAGE": [
+            "In critical region with interrupt level=0, intfc=GigabitEthernet0/1 -Process= \"SSH Process\", ipl= 0, pid= 100",
+            "-Traceback= 115004Az 218B85z 13E46Bz 162431Bz 1626B36z 163EA3Ez 163E40Bz 14D8BDz 14CF84z 1587AAz 1596CBz 15965Fz 21DDD3z 19A1258z 19C9CE5z 19C989Az"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "16",
+          "TIME": "13:15:36.584",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "2",
+          "MNEMONIC": "INTVULN",
+          "MESSAGE": [
+            "In critical region with interrupt level=0, intfc=GigabitEthernet0/1 -Process= \"SSH Process\", ipl= 0, pid= 48",
+            "-Traceback= 115004Az 218B85z 13E46Bz 162431Bz 1626B36z 163EA3Ez 163E40Bz 14D8BDz 14CF84z 1587AAz 1596CBz 15965Fz 21DDD3z 19A1258z 19C9CE5z 19C989Az"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "17",
+          "TIME": "00:08:43.315",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "2",
+          "MNEMONIC": "INTVULN",
+          "MESSAGE": [
+            "In critical region with interrupt level=0, intfc=GigabitEthernet0/1 -Process= \"SSH Process\", ipl= 0, pid= 100",
+            "-Traceback= 115004Az 218B85z 13E46Bz 162431Bz 1626B36z 163EA3Ez 163E40Bz 14D8BDz 14CF84z 1587AAz 1596CBz 15965Fz 21DDD3z 19A1258z 19C9CE5z 19C989Az"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "17",
+          "TIME": "00:11:28.077",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "2",
+          "MNEMONIC": "INTVULN",
+          "MESSAGE": [
+            "In critical region with interrupt level=0, intfc=GigabitEthernet0/1 -Process= \"SSH Process\", ipl= 0, pid= 100",
+            "-Traceback= 115004Az 218B85z 13E46Bz 162431Bz 1626B36z 163EA3Ez 163E40Bz 14D8BDz 14CF84z 15886Az 1597CBz 15975Fz 21DDD3z 19A1258z 19C9CE5z 19C989Az"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "19",
+          "TIME": "12:19:46.360",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "2",
+          "MNEMONIC": "INTVULN",
+          "MESSAGE": [
+            "In critical region with interrupt level=0, intfc=GigabitEthernet0/1 -Process= \"SSH Process\", ipl= 0, pid= 48",
+            "-Traceback= 115004Az 218B85z 13E46Bz 162431Bz 1626B36z 163EA3Ez 163E40Bz 14D8BDz 14CF84z 1587AAz 1596CBz 15965Fz 21DDD3z 19A1258z 19C9CE5z 19C989Az"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "20",
+          "TIME": "13:08:45.909",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "2",
+          "MNEMONIC": "INTVULN",
+          "MESSAGE": [
+            "In critical region with interrupt level=0, intfc=GigabitEthernet0/1 -Process= \"LLDP Protocol\", ipl= 0, pid= 224",
+            "-Traceback= 115004Az 218B85z 13E46Bz 162431Bz 1626B36z 163EA3Ez 163E40Bz 14D8BDz 14CF84z 1587AAz 1596CBz 15965Fz 21DDD3z 4923EDz 490A2Dz"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "22",
+          "TIME": "12:12:55.588",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "2",
+          "MNEMONIC": "INTVULN",
+          "MESSAGE": [
+            "In critical region with interrupt level=0, intfc=GigabitEthernet0/1 -Process= \"SSH Process\", ipl= 0, pid= 48",
+            "-Traceback= 115004Az 218B85z 13E46Bz 162431Bz 1626B36z 163EA3Ez 163E40Bz 14D8BDz 14CFACz 1587AAz 1596CBz 15965Fz 21DDD3z 19A1258z 19C9CE5z 19C989Az"
+          ]
+        }
+      ]
+    },
+    "usa-leaf-2": {
+      "template": "cisco_ios_show_logging",
+      "score": 91.94,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 19,
+      "records": [
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:00.286",
+          "TIMEZONE": "",
+          "FACILITY": "ATA",
+          "SEVERITY": "6",
+          "MNEMONIC": "DEV_FOUND",
+          "MESSAGE": [
+            "device 0x1F0"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:00.360",
+          "TIMEZONE": "",
+          "FACILITY": "NVRAM",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_NVRAM_READ_OK",
+          "MESSAGE": [
+            "NVRAM configuration 'flash:/nvram' was read from disk."
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.369",
+          "TIMEZONE": "",
+          "FACILITY": "SPANTREE",
+          "SEVERITY": "5",
+          "MNEMONIC": "EXTENDED_SYSID",
+          "MESSAGE": [
+            "Extended SysId enabled for type vlan"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.175",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_I",
+          "MESSAGE": [
+            "Configured from memory by console"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.194",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "RESTART",
+          "MESSAGE": [
+            "System restarted --",
+            "Cisco IOS Software, vios_l2 Software (vios_l2-ADVENTERPRISEK9-M), Version 15.2(4.0.55)E, TEST ENGINEERING ESTG_WEEKLY BUILD, synced to  END_OF_FLO_ISP",
+            "Technical Support: http://www.cisco.com/techsupport",
+            "Copyright (c) 1986-2015 by Cisco Systems, Inc.",
+            "Compiled Tue 28-Jul-15 18:52 by sasyamal"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.202",
+          "TIMEZONE": "",
+          "FACILITY": "SSH",
+          "SEVERITY": "5",
+          "MNEMONIC": "ENABLED",
+          "MESSAGE": [
+            "SSH 2.0 has been enabled"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.067",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.067",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.068",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/2, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.068",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/3, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.088",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.088",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.088",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/2, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.088",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/3, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:38.573",
+          "TIMEZONE": "",
+          "FACILITY": "PLATFORM",
+          "SEVERITY": "5",
+          "MNEMONIC": "SIGNATURE_VERIFIED",
+          "MESSAGE": [
+            "Image 'flash0:/vios_l2-adventerprisek9-m' passed code signing verification"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:02.267",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Vlan111, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:03.267",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Vlan111, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:04.297",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Vlan10, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:05.297",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Vlan10, changed state to up"
+          ]
+        }
+      ]
+    },
+    "usa-leaf-1": {
+      "template": "cisco_ios_show_logging",
+      "score": 91.94,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 19,
+      "records": [
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:00.239",
+          "TIMEZONE": "",
+          "FACILITY": "ATA",
+          "SEVERITY": "6",
+          "MNEMONIC": "DEV_FOUND",
+          "MESSAGE": [
+            "device 0x1F0"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:00.315",
+          "TIMEZONE": "",
+          "FACILITY": "NVRAM",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_NVRAM_READ_OK",
+          "MESSAGE": [
+            "NVRAM configuration 'flash:/nvram' was read from disk."
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:28.368",
+          "TIMEZONE": "",
+          "FACILITY": "SPANTREE",
+          "SEVERITY": "5",
+          "MNEMONIC": "EXTENDED_SYSID",
+          "MESSAGE": [
+            "Extended SysId enabled for type vlan"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.206",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_I",
+          "MESSAGE": [
+            "Configured from memory by console"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.223",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "RESTART",
+          "MESSAGE": [
+            "System restarted --",
+            "Cisco IOS Software, vios_l2 Software (vios_l2-ADVENTERPRISEK9-M), Version 15.2(4.0.55)E, TEST ENGINEERING ESTG_WEEKLY BUILD, synced to  END_OF_FLO_ISP",
+            "Technical Support: http://www.cisco.com/techsupport",
+            "Copyright (c) 1986-2015 by Cisco Systems, Inc.",
+            "Compiled Tue 28-Jul-15 18:52 by sasyamal"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.232",
+          "TIMEZONE": "",
+          "FACILITY": "SSH",
+          "SEVERITY": "5",
+          "MNEMONIC": "ENABLED",
+          "MESSAGE": [
+            "SSH 1.99 has been enabled"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.094",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.095",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.095",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/2, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.095",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/3, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.132",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.132",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.132",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/2, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.132",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/3, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:38.519",
+          "TIMEZONE": "",
+          "FACILITY": "PLATFORM",
+          "SEVERITY": "5",
+          "MNEMONIC": "SIGNATURE_VERIFIED",
+          "MESSAGE": [
+            "Image 'flash0:/vios_l2-adventerprisek9-m' passed code signing verification"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:04.345",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Vlan10, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:04.345",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Vlan111, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:05.345",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Vlan10, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:05.345",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Vlan111, changed state to up"
+          ]
+        }
+      ]
+    },
+    "eng-leaf-1": {
+      "template": "cisco_ios_show_logging",
+      "score": 91.94,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 17,
+      "records": [
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:00.247",
+          "TIMEZONE": "",
+          "FACILITY": "ATA",
+          "SEVERITY": "6",
+          "MNEMONIC": "DEV_FOUND",
+          "MESSAGE": [
+            "device 0x1F0"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:00.317",
+          "TIMEZONE": "",
+          "FACILITY": "NVRAM",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_NVRAM_READ_OK",
+          "MESSAGE": [
+            "NVRAM configuration 'flash:/nvram' was read from disk."
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:29.374",
+          "TIMEZONE": "",
+          "FACILITY": "SPANTREE",
+          "SEVERITY": "5",
+          "MNEMONIC": "EXTENDED_SYSID",
+          "MESSAGE": [
+            "Extended SysId enabled for type vlan"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.198",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_I",
+          "MESSAGE": [
+            "Configured from memory by console"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.215",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "RESTART",
+          "MESSAGE": [
+            "System restarted --",
+            "Cisco IOS Software, vios_l2 Software (vios_l2-ADVENTERPRISEK9-M), Version 15.2(4.0.55)E, TEST ENGINEERING ESTG_WEEKLY BUILD, synced to  END_OF_FLO_ISP",
+            "Technical Support: http://www.cisco.com/techsupport",
+            "Copyright (c) 1986-2015 by Cisco Systems, Inc.",
+            "Compiled Tue 28-Jul-15 18:52 by sasyamal"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:30.223",
+          "TIMEZONE": "",
+          "FACILITY": "SSH",
+          "SEVERITY": "5",
+          "MNEMONIC": "ENABLED",
+          "MESSAGE": [
+            "SSH 2.0 has been enabled"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.091",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.092",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.092",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/2, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:31.092",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/3, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:32.133",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:32.133",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:32.133",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/2, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:32.133",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/3, changed state to down"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:39.532",
+          "TIMEZONE": "",
+          "FACILITY": "PLATFORM",
+          "SEVERITY": "5",
+          "MNEMONIC": "SIGNATURE_VERIFIED",
+          "MESSAGE": [
+            "Image 'flash0:/vios_l2-adventerprisek9-m' passed code signing verification"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:05.353",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface Vlan11, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:06.353",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface Vlan11, changed state to up"
+          ]
+        }
+      ]
+    },
+    "usa-rtr-1": {
+      "template": "cisco_ios_show_logging",
+      "score": 91.94,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 28,
+      "records": [
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:00.367",
+          "TIMEZONE": "",
+          "FACILITY": "ATA",
+          "SEVERITY": "6",
+          "MNEMONIC": "DEV_FOUND",
+          "MESSAGE": [
+            "device 0x1F0"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Mar",
+          "DAY": "1",
+          "TIME": "00:00:09.260",
+          "TIMEZONE": "",
+          "FACILITY": "NVRAM",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_NVRAM_READ_OK",
+          "MESSAGE": [
+            "NVRAM configuration 'flash:/nvram' was read from disk."
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:42.681",
+          "TIMEZONE": "",
+          "FACILITY": "PA",
+          "SEVERITY": "3",
+          "MNEMONIC": "PA_INIT_FAILED",
+          "MESSAGE": [
+            "Performance Agent failed to initialize (Missing Data License)"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:43.451",
+          "TIMEZONE": "",
+          "FACILITY": "CVAC",
+          "SEVERITY": "4",
+          "MNEMONIC": "FILE_IGNORED",
+          "MESSAGE": [
+            "Configuration file flash0:/ios_config.txt is ignored : empty file"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:43.528",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "CONFIG_I",
+          "MESSAGE": [
+            "Configured from memory by console"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:43.774",
+          "TIMEZONE": "",
+          "FACILITY": "CVAC",
+          "SEVERITY": "4",
+          "MNEMONIC": "FILE_IGNORED",
+          "MESSAGE": [
+            "Configuration file flash0:/ios_config.txt is ignored : empty file"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:44.035",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:44.035",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:44.035",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/2, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:44.035",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "3",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Interface GigabitEthernet0/3, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:44.212",
+          "TIMEZONE": "",
+          "FACILITY": "SYS",
+          "SEVERITY": "5",
+          "MNEMONIC": "RESTART",
+          "MESSAGE": [
+            "System restarted --",
+            "Cisco IOS Software, IOSv Software (VIOS-ADVENTERPRISEK9-M), Version 15.6(2)T, RELEASE SOFTWARE (fc2)",
+            "Technical Support: http://www.cisco.com/techsupport",
+            "Copyright (c) 1986-2016 by Cisco Systems, Inc.",
+            "Compiled Tue 22-Mar-16 16:19 by prod_rel_team"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:44.213",
+          "TIMEZONE": "",
+          "FACILITY": "SNMP",
+          "SEVERITY": "5",
+          "MNEMONIC": "COLDSTART",
+          "MESSAGE": [
+            "SNMP agent on host usa-rtr-1 is undergoing a cold start"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:44.219",
+          "TIMEZONE": "",
+          "FACILITY": "SSH",
+          "SEVERITY": "5",
+          "MNEMONIC": "ENABLED",
+          "MESSAGE": [
+            "SSH 1.99 has been enabled"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:44.224",
+          "TIMEZONE": "",
+          "FACILITY": "CRYPTO",
+          "SEVERITY": "6",
+          "MNEMONIC": "ISAKMP_ON_OFF",
+          "MESSAGE": [
+            "ISAKMP is OFF"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:44.224",
+          "TIMEZONE": "",
+          "FACILITY": "CRYPTO",
+          "SEVERITY": "6",
+          "MNEMONIC": "GDOI_ON_OFF",
+          "MESSAGE": [
+            "GDOI is OFF"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:45.083",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/0, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:45.083",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/1, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:45.083",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/2, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:45.083",
+          "TIMEZONE": "",
+          "FACILITY": "LINEPROTO",
+          "SEVERITY": "5",
+          "MNEMONIC": "UPDOWN",
+          "MESSAGE": [
+            "Line protocol on Interface GigabitEthernet0/3, changed state to up"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:48:54.513",
+          "TIMEZONE": "",
+          "FACILITY": "PLATFORM",
+          "SEVERITY": "5",
+          "MNEMONIC": "SIGNATURE_VERIFIED",
+          "MESSAGE": [
+            "Image 'flash0:/vios-adventerprisek9-m' passed code signing verification"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:26.217",
+          "TIMEZONE": "",
+          "FACILITY": "OSPF",
+          "SEVERITY": "5",
+          "MNEMONIC": "ADJCHG",
+          "MESSAGE": [
+            "Process 1, Nbr 172.16.2.1 on GigabitEthernet0/3 from LOADING to FULL, Loading Done"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:49:30.126",
+          "TIMEZONE": "",
+          "FACILITY": "OSPF",
+          "SEVERITY": "5",
+          "MNEMONIC": "ADJCHG",
+          "MESSAGE": [
+            "Process 1, Nbr 172.16.128.1 on GigabitEthernet0/0 from LOADING to FULL, Loading Done"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:50:21.531",
+          "TIMEZONE": "",
+          "FACILITY": "OSPF",
+          "SEVERITY": "5",
+          "MNEMONIC": "ADJCHG",
+          "MESSAGE": [
+            "Process 1, Nbr 172.16.1.6 on GigabitEthernet0/2 from LOADING to FULL, Loading Done"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "14",
+          "TIME": "03:56:58.270",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "2",
+          "MNEMONIC": "INTVULN",
+          "MESSAGE": [
+            "In critical region with interrupt level=0, intfc=GigabitEthernet0/0 -Process= \"SSH Process\", ipl= 0, pid= 121",
+            "-Traceback= 115004Az 218B85z 13E46Bz 162431Bz 1626FC0z 163EA3Ez 163E40Bz 14D8BDz 14CF84z 1587AAz 1596CBz 15965Fz 21DDD3z 19A1258z 19C9CE5z 19C989Az"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "15",
+          "TIME": "12:03:40.570",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "2",
+          "MNEMONIC": "INTVULN",
+          "MESSAGE": [
+            "In critical region with interrupt level=0, intfc=GigabitEthernet0/0 -Process= \"SSH Process\", ipl= 0, pid= 48",
+            "-Traceback= 115004Az 218B85z 13E46Bz 162431Bz 1626FC0z 163EA3Ez 163E40Bz 14D8BDz 14CF84z 1587AAz 1596CBz 15965Fz 21DDD3z 19A1258z 19C9CE5z 19C989Az"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "19",
+          "TIME": "12:19:45.840",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "2",
+          "MNEMONIC": "INTVULN",
+          "MESSAGE": [
+            "In critical region with interrupt level=0, intfc=GigabitEthernet0/0 -Process= \"SSH Process\", ipl= 0, pid= 48",
+            "-Traceback= 115004Az 218B85z 13E46Bz 162431Bz 1626FC0z 163EA3Ez 163E40Bz 14D8BDz 14CF84z 1587AAz 1596CBz 15965Fz 21DDD3z 19A1258z 19C9CE5z 19C989Az"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "19",
+          "TIME": "12:29:08.694",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "2",
+          "MNEMONIC": "INTVULN",
+          "MESSAGE": [
+            "In critical region with interrupt level=0, intfc=GigabitEthernet0/0 -Process= \"SSH Process\", ipl= 0, pid= 48",
+            "-Traceback= 115004Az 218B85z 13E46Bz 162431Bz 1626FC0z 163EA3Ez 163E40Bz 14D8BDz 14CF84z 1587AAz 1596CBz 15965Fz 21DDD3z 19A1258z 19C9CE5z 19C989Az"
+          ]
+        },
+        {
+          "NUMBER": "",
+          "MONTH": "Dec",
+          "DAY": "22",
+          "TIME": "12:12:05.299",
+          "TIMEZONE": "",
+          "FACILITY": "LINK",
+          "SEVERITY": "2",
+          "MNEMONIC": "INTVULN",
+          "MESSAGE": [
+            "In critical region with interrupt level=0, intfc=GigabitEthernet0/0 -Process= \"SSH Process\", ipl= 0, pid= 48",
+            "-Traceback= 115004Az 218B85z 13E46Bz 162431Bz 1626FC0z 163EA3Ez 163E40Bz 14D8BDz 14CF84z 1587AAz 1596CBz 15965Fz 21DDD3z 19A1258z 19C9CE5z 19C989Az"
+          ]
+        }
+      ]
+    }
+  }
+}

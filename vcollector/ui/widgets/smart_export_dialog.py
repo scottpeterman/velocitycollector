@@ -1,7 +1,7 @@
 """
 Smart Export Dialog for VelocityCollector Output View
 
-Parses captured network output using TextFSM templates (auto-detected or manual)
+Parses  network output using TextFSM templates (auto-detected or manual)
 and exports structured data to JSON or CSV formats.
 
 Usage:
@@ -472,7 +472,9 @@ class SmartExportDialog(QDialog):
         self.template_combo.clear()
         self.template_combo.addItem("— Select Template —", None)
 
-        db_path = Path(self.db_path)
+        # OS-independent path to ~/.vcollector/tfsm_templates.db
+        db_path = Path.home() / ".vcollector" / "tfsm_templates.db"
+
         if not db_path.exists():
             self.status_label.setText(f"Template database not found: {db_path}")
             return
@@ -513,6 +515,7 @@ class SmartExportDialog(QDialog):
 
         except Exception as e:
             self.status_label.setText(f"Error loading templates: {e}")
+
 
     def _on_auto_detect(self):
         """Run auto-detection for best matching template."""

@@ -20,42 +20,50 @@ VelocityCollector provides:
 - **Vendor-neutral collection** — SSH-based, platform-aware command execution
 - **TextFSM validation** — Structured output parsing with quality scoring
 - **Smart Export** — Auto-detect templates and export parsed data to JSON/CSV
+- **Batch Execution** — Run multiple jobs sequentially with configurable ordering
 - **Content search** — Regex-powered search across all collected outputs
 
 ## Screenshots
 
 ### Device Inventory
-![Device Edit](screenshots/device_edit.png)
+![Device Edit](https://raw.githubusercontent.com/scottpeterman/velocitycollector/main/screenshots/device_edit.png)
 *Device editing with Identity, Network, Credentials, Hardware, and Notes tabs*
 
 ### Credential Vault
-![Credential Edit](screenshots/cred_edit.png)
+![Credential Edit](https://raw.githubusercontent.com/scottpeterman/velocitycollector/main/screenshots/cred_edit.png)
 *Credential management with password and SSH key support*
 
 ### Vault Management
-![Vault](screenshots/vault.png)
+![Vault](https://raw.githubusercontent.com/scottpeterman/velocitycollector/main/screenshots/vault.png)
 *Vault actions: change password, export/import, automation hints*
 
+### Batch Execution
+![Batch Dialog](https://raw.githubusercontent.com/scottpeterman/velocitycollector/main/screenshots/batch_dialog.png)
+*Batch editor with dual-list job picker, filtering, and execution ordering*
+
+![Batch Run](https://raw.githubusercontent.com/scottpeterman/velocitycollector/main/screenshots/batch_run.png)
+*Run view in batch mode with job list preview and batch-specific options*
+
 ### Output Browser & Search
-![Content Search](screenshots/search.png)
+![Content Search](https://raw.githubusercontent.com/scottpeterman/velocitycollector/main/screenshots/search.png)
 *Content search with regex support across all captured files*
 
-![Search Viewer](screenshots/search_viewer.png)
+![Search Viewer](https://raw.githubusercontent.com/scottpeterman/velocitycollector/main/screenshots/search_viewer.png)
 *File viewer with match highlighting and navigation*
 
 ### Smart Export
-![Smart Export](screenshots/smart_export.png)
+![Smart Export](https://raw.githubusercontent.com/scottpeterman/velocitycollector/main/screenshots/smart_export.png)
 *Auto-detect TextFSM templates and export structured data to JSON/CSV*
 
 ### TextFSM Template Tools
-![Manual Test](screenshots/tfsm_manual.png)
+![Manual Test](https://raw.githubusercontent.com/scottpeterman/velocitycollector/main/screenshots/tfsm_manual.png)
 *Template development with live parsing results*
 
-![Template Manager](screenshots/tfsm_template_mgr.png)
+![Template Manager](https://raw.githubusercontent.com/scottpeterman/velocitycollector/main/screenshots/tfsm_template_mgr.png)
 *Full CRUD for TextFSM templates with NTC import*
 
 ### Coverage Report
-![Coverage Report](screenshots/coverage_report.png)
+![Coverage Report](https://raw.githubusercontent.com/scottpeterman/velocitycollector/main/screenshots/coverage_report.png)
 *HTML coverage report showing collection statistics*
 
 ## Architecture
@@ -88,6 +96,14 @@ VelocityCollector provides:
 │  inventory      │  │  • job_history  │  │  • credentials  │
 │  + cred mapping │  │  • captures     │  │  • vault_meta   │
 └─────────────────┘  └─────────────────┘  └─────────────────┘
+                            │
+                            ▼
+                    ┌─────────────────┐
+                    │   batches/*.yaml │
+                    │                 │
+                    │  • Batch defs   │
+                    │  • Job ordering │
+                    └─────────────────┘
 ```
 
 ### Database Design
@@ -107,6 +123,10 @@ VelocityCollector provides:
 - `job_tags` — Job categorization with colors
 - `job_history` — Execution records with success/failure counts
 - `captures` — Output file metadata and validation scores
+
+**batches/*.yaml** — Batch definitions
+- Named collections of jobs with execution order
+- Stored as YAML files for easy version control
 
 ## Features
 
@@ -180,6 +200,49 @@ Jobs define what data to collect and from which devices. Jobs are stored in the 
 | **TextFSM Validation** | ✅ Complete | Template matching, quality scoring |
 | **Execution Options** | ✅ Complete | Workers, timeout, inter-command delay |
 
+### Batch Execution ✅ NEW
+
+Run multiple jobs sequentially with a single click. Batch execution is ideal for comprehensive collection workflows—collect ARP tables, MAC addresses, and configs in one operation.
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **Batch Definitions** | ✅ Complete | Named collections of jobs stored as YAML files |
+| **Dual-List Picker** | ✅ Complete | Select jobs from available pool with filtering |
+| **Execution Ordering** | ✅ Complete | Drag-drop or up/down buttons to set job order |
+| **Batch CRUD** | ✅ Complete | Create, edit, delete batches from Run view |
+| **Stop on Failure** | ✅ Complete | Optionally halt batch if a job fails |
+| **Inter-Job Delay** | ✅ Complete | Configurable delay between jobs (0-60 seconds) |
+| **Progress Tracking** | ✅ Complete | Shows current job and overall batch progress |
+| **Results Summary** | ✅ Complete | Aggregated statistics across all batch jobs |
+
+**Creating a Batch:**
+1. Navigate to **Run** view
+2. Select **Batch** mode
+3. Click **New** to open batch editor
+4. Enter batch name (e.g., "Daily Collection")
+5. Use filter to find jobs, double-click or arrow buttons to add
+6. Reorder with **▲ Up** / **▼ Down** buttons
+7. Click **Save**
+
+**Running a Batch:**
+1. Select **Batch** mode in Run view
+2. Choose batch from dropdown
+3. Review jobs in batch (shown in list below dropdown)
+4. Configure options:
+   - **Stop on failure**: Halt if any job fails
+   - **Delay between jobs**: Wait N seconds between jobs
+5. Click **▶ Run Job**
+
+**Batch File Format:**
+```yaml
+# ~/.vcollector/batches/daily-collection.yaml
+name: Daily Collection
+jobs:
+  - arista-arp-300
+  - arista-mac-300
+  - cisco-config-backup
+```
+
 ### Collection Engine ✅
 
 Multi-threaded SSH execution with per-device credential support:
@@ -187,7 +250,7 @@ Multi-threaded SSH execution with per-device credential support:
 | Feature | Status | Description |
 |---------|--------|-------------|
 | **JobRunner** | ✅ Complete | Single job execution with progress callbacks |
-| **BatchRunner** | ✅ Complete | Parallel job execution |
+| **BatchRunner** | ✅ Complete | Sequential multi-job execution |
 | **SSHExecutorPool** | ✅ Complete | Concurrent device connections |
 | **Per-Device Creds** | ✅ Complete | Automatic credential selection per device |
 | **Dual Source** | ✅ Complete | Load jobs from database (by slug/ID) or JSON files |
@@ -208,7 +271,7 @@ Full-featured captured data browser with Smart Export:
 | **Smart Export** | ✅ Complete | Auto-detect TextFSM templates, export JSON/CSV |
 | **External Tools** | ✅ Complete | Copy All, Open External Editor, Open Folder |
 
-### Smart Export ✅ NEW
+### Smart Export ✅
 
 Transform raw CLI output into structured data with automatic template matching:
 
@@ -268,7 +331,7 @@ Generates `coverage_report.html` showing:
 | **Sites** | ✅ Complete | Full CRUD, timezone, status filter |
 | **Platforms** | ✅ Complete | Tabbed with Roles, netmiko dropdown |
 | **Jobs** | ✅ Complete | Full CRUD, capture type/vendor filters |
-| **Run** | ✅ Complete | Job execution with per-device creds, real-time progress |
+| **Run** | ✅ Complete | Single job + batch mode, real-time progress, per-device creds |
 | **Credentials** | ✅ Complete | Add/edit/delete, password + SSH key, default selection |
 | **Vault** | ✅ Complete | Lock/unlock, change password, export/import, reset |
 | **History** | ✅ Complete | Job execution history browser |
@@ -277,16 +340,13 @@ Generates `coverage_report.html` showing:
 ## Installation
 
 ```bash
-# From source
-git clone https://github.com/scottpeterman/velocitycollector.git
-cd velocitycollector
-pip install -e .
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# venv\Scripts\activate   # Windows
 
-# Run GUI
-vcollector
-
-# Or run as module
-python -m vcollector
+# Install from PyPI
+pip install velocitycollector
 ```
 
 ### Requirements
@@ -308,41 +368,75 @@ Bootstrap the directory structure and databases:
 vcollector init
 ```
 
-This creates:
-- `~/.vcollector/` directory structure
-- `config.yaml` with defaults
-- `dcim.db` with schema and default platforms/roles
-- `collector.db` with jobs, credentials, history schema
-- `tfsm_templates.db` for TextFSM templates
-
-### 2. Initialize the Vault
-
-Set up encryption for credential storage:
-
-```bash
-vcollector vault init
-Enter master password: ••••••••••••
-Confirm master password: ••••••••••••
-✓ Vault initialized successfully
+Output:
+```
+Initializing VelocityCollector in: ~/.vcollector
+Creating directories...
+  ✓ ~/.vcollector
+  ✓ ~/.vcollector/collections
+  ✓ ~/.vcollector/jobs
+  ✓ ~/.vcollector/logs
+Creating config.yaml...
+  ✓ ~/.vcollector/config.yaml
+Initializing dcim.db...
+  ✓ ~/.vcollector/dcim.db
+    - 8 manufacturers
+    - 13 platforms (with netmiko mappings)
+    - 12 device roles
+Initializing collector.db...
+  ✓ ~/.vcollector/collector.db
+    - credentials table (vault)
+    - jobs table
+    - job_history table
+    - captures table
+Initializing tfsm_templates.db...
+  ✓ ~/.vcollector/tfsm_templates.db
+============================================================
+✓ VelocityCollector initialized successfully!
+============================================================
 ```
 
-### 3. Add Credentials
+Use `vcollector init --force` to reinitialize (resets databases).
+
+### 2. Launch GUI
 
 ```bash
-# CLI
+vcollector
+```
+
+### 3. Initial Setup (via GUI)
+
+From the GUI, complete setup in order:
+
+1. **Vault** → Initialize vault with master password
+2. **Credentials** → Add SSH credentials (username/password or SSH key)
+3. **Devices** → Add network devices manually or import
+4. **Jobs** → Create collection jobs or download starter jobs
+5. **Tools → TextFSM Tester** → Import NTC templates for parsing
+
+### 4. Alternative: CLI Setup
+
+```bash
+# Initialize vault
+vcollector vault init
+
+# Add credentials
 vcollector vault add lab --username admin
 vcollector vault add legacy --username netops
 
-# Or via GUI: Credentials → + Add Credential
+# Discover working credentials for devices
+vcollector creds discover
+vcollector creds status
+
+# Run collection
+vcollector run --job arista-arp-300
 ```
 
-### 4. Add Devices
+### 5. Adding Devices
 
-**Option A: Import from VelocityCMDB**
+**Option A: GUI**
 
-```bash
-python import_from_velocitycmdb.py
-```
+Navigate to **Devices** → **+ Add Device**
 
 **Option B: Import from CSV**
 
@@ -353,40 +447,15 @@ leaf-1,172.16.10.1,arista_eos,dc1,leaf,active
 core-1,172.16.2.1,cisco_ios,dc1,router,active
 ```
 
-**Option C: GUI**
-
-Navigate to **Devices** → **+ Add Device**
-
-### 5. Discover Credentials
-
-Test all vault credentials against devices to find working combinations:
+**Option C: Import from VelocityCMDB**
 
 ```bash
-# CLI - discover credentials for all active devices
-vcollector creds discover
-
-# Filter by site/platform
-vcollector creds discover --site dc1
-vcollector creds discover --platform arista_eos
-
-# Check coverage
-vcollector creds status
+python import_from_velocitycmdb.py
 ```
 
-**Or via GUI:**
-- Navigate to **Devices** view
-- Click **🔑 Discover Creds** button
-- Or select specific devices and use context menu → Credentials → Discover
+### 6. Creating Jobs
 
-### 6. Create Jobs
-
-**Option A: Migrate from JSON files**
-
-```bash
-python migrate_jobs.py --jobs-dir jobs_v2/
-```
-
-**Option B: GUI**
+**Option A: GUI**
 
 Navigate to **Jobs** → **+ Add Job**:
 
@@ -395,9 +464,19 @@ Navigate to **Jobs** → **+ Add Job**:
 - **Execution Tab**: Max workers, timeout, protocol
 - **Device Filters Tab**: Site, platform, role, name pattern, status
 
+**Option B: Download Starter Jobs**
+
+Use **File → Download Starter Jobs** to import pre-built job definitions.
+
+**Option C: Migrate from JSON**
+
+```bash
+python migrate_jobs.py --jobs-dir jobs_v2/
+```
+
 ### 7. Run Collection
 
-**CLI (database-first)**:
+**Single Job (CLI)**:
 
 ```bash
 # Run by job slug
@@ -416,14 +495,27 @@ vcollector run --job arista-arp-300 --dry-run
 vcollector run --job arista-arp-300 --debug
 ```
 
-**GUI**:
+**Single Job (GUI)**:
 
 Navigate to **Run**:
-1. Select job from dropdown
-2. Set options (device limit, validation, per-device credentials)
-3. Click **▶ Run Job**
-4. Enter vault password (or set `VCOLLECTOR_VAULT_PASS` env var)
-5. Watch real-time progress with credential info per device
+1. Select **Single Job** mode
+2. Select job from dropdown
+3. Set options (device limit, validation, per-device credentials)
+4. Click **▶ Run Job**
+5. Enter vault password (or set `VCOLLECTOR_VAULT_PASS` env var)
+6. Watch real-time progress with credential info per device
+
+**Batch Execution (GUI)**:
+
+Navigate to **Run**:
+1. Select **Batch** mode
+2. Select batch from dropdown (or click **New** to create one)
+3. Review jobs in batch list
+4. Configure batch options:
+   - **Stop on failure**: Stop if any job fails
+   - **Delay between jobs**: Wait between jobs (default 5 sec)
+5. Click **▶ Run Job**
+6. Monitor batch progress showing current job and overall status
 
 ### 8. View Results & Export Data
 
@@ -559,6 +651,9 @@ vcollector run --job arista-arp-300 -y
 ├── collector.db         # Jobs, credentials, history
 ├── tfsm_templates.db    # TextFSM template database
 ├── jobs/                # Legacy JSON job files (backward compatibility)
+├── batches/             # Batch definition YAML files
+│   ├── daily-collection.yaml
+│   └── full-inventory.yaml
 ├── collections/         # Captured output
 │   ├── arp/
 │   ├── mac/
@@ -584,6 +679,7 @@ vcollector/
 │   └── vault.py             # Vault command handler
 ├── core/
 │   ├── __init__.py
+│   ├── batch_loader.py      # Batch definition loading/saving
 │   ├── config.py            # App configuration
 │   ├── cred_discovery.py    # Credential discovery engine
 │   ├── ssh_client.py        # Low-level SSH client
@@ -611,6 +707,7 @@ vcollector/
 │   ├── styles.py            # Theme stylesheets (Light/Dark/Cyber)
 │   └── widgets/
 │       ├── __init__.py
+│       ├── batch_dialogs.py     # Batch create/edit dialog
 │       ├── credentials_view.py
 │       ├── device_dialogs.py    # Credential tab, test button
 │       ├── devices_view.py      # Cred status column, discovery
@@ -620,7 +717,7 @@ vcollector/
 │       ├── output_view.py       # Smart Export integration
 │       ├── platform_dialogs.py
 │       ├── platforms_view.py
-│       ├── run_view.py          # Per-device creds checkbox
+│       ├── run_view.py          # Single job + batch mode execution
 │       ├── site_dialogs.py
 │       ├── sites_view.py
 │       ├── smart_export_dialog.py  # TextFSM parsing & export
@@ -648,12 +745,18 @@ tfsm_templates_db: ~/.vcollector/tfsm_templates.db
 # Storage Paths
 collections_dir: ~/.vcollector/collections
 legacy_jobs_dir: ~/.vcollector/jobs
+batches_dir: ~/.vcollector/batches
 
 # Default Execution Settings
 execution:
   max_workers: 12
   timeout: 60
   inter_command_delay: 1
+
+# Batch Defaults
+batch:
+  delay_between_jobs: 5
+  stop_on_failure: false
 
 # Logging
 logging:
@@ -710,7 +813,17 @@ logging:
 - [x] CSV export for spreadsheets
 - [x] Integration with Output Browser
 
-### v0.6 — Integration (Planned)
+### v0.6 — Batch Execution ✅ NEW
+- [x] Batch definition files (YAML)
+- [x] Batch create/edit dialog with dual-list picker
+- [x] Job ordering with drag-drop and up/down buttons
+- [x] Run view mode toggle (Single Job / Batch)
+- [x] Sequential job execution with progress
+- [x] Stop on failure option
+- [x] Configurable inter-job delay
+- [x] Batch results summary
+
+### v0.7 — Integration (Planned)
 - [ ] NetBox API sync (import devices)
 - [ ] Scheduled collection (cron-like)
 - [ ] Config diff detection
@@ -718,6 +831,7 @@ logging:
 - [ ] CSV import for devices
 - [ ] Job builder wizard
 - [ ] Batch Smart Export (multiple files)
+- [ ] CLI batch execution
 
 ### Future
 - [ ] SNMP collection support
@@ -742,9 +856,3 @@ GPLv3 License - See LICENSE file
 ## Author
 
 Scott Peterman — Network Automation Tooling
-
-Built with the "100-year-old hammer" philosophy: use available tools to solve real problems rather than waiting for perfect solutions.
-
----
-
-*VelocityCollector evolved from [VelocityCMDB](https://github.com/scottpeterman/velocitycmdb), separating collection functionality into a dedicated tool with proper credential security and structured job management.*

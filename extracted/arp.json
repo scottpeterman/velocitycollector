@@ -1,0 +1,793 @@
+{
+  "capture_type": "arp",
+  "extracted_at": "2025-12-22T06:18:26.508037",
+  "total_devices": 12,
+  "total_records": 88,
+  "devices": {
+    "usa-leaf-3": {
+      "template": "cisco_ios_show_arp",
+      "score": 84.29,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 6,
+      "records": [
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.1",
+          "AGE_MIN": "0",
+          "HARDWARE_ADDRESS": "0000.5e00.0101",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.2",
+          "AGE_MIN": "84",
+          "HARDWARE_ADDRESS": "0caf.da85.dc95",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.3",
+          "AGE_MIN": "74",
+          "HARDWARE_ADDRESS": "0c82.f1c3.6619",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.21",
+          "AGE_MIN": "115",
+          "HARDWARE_ADDRESS": "0c5c.72f7.800a",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.22",
+          "AGE_MIN": "107",
+          "HARDWARE_ADDRESS": "0c89.c3d1.800a",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.23",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0c53.c9a1.800a",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        }
+      ]
+    },
+    "eng-leaf-2": {
+      "template": "cisco_ios_show_arp",
+      "score": 84.29,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 6,
+      "records": [
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.1",
+          "AGE_MIN": "0",
+          "HARDWARE_ADDRESS": "0000.5e00.0101",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.2",
+          "AGE_MIN": "55",
+          "HARDWARE_ADDRESS": "0c1e.0e4f.f0a7",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.3",
+          "AGE_MIN": "98",
+          "HARDWARE_ADDRESS": "0c11.c540.fbe2",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.41",
+          "AGE_MIN": "239",
+          "HARDWARE_ADDRESS": "0cf6.f5eb.800b",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.42",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0cfc.f798.800b",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.43",
+          "AGE_MIN": "227",
+          "HARDWARE_ADDRESS": "0cdb.c454.800b",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        }
+      ]
+    },
+    "eng-leaf-3": {
+      "template": "cisco_ios_show_arp",
+      "score": 84.29,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 6,
+      "records": [
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.1",
+          "AGE_MIN": "0",
+          "HARDWARE_ADDRESS": "0000.5e00.0101",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.2",
+          "AGE_MIN": "55",
+          "HARDWARE_ADDRESS": "0c1e.0e4f.f0a7",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.3",
+          "AGE_MIN": "98",
+          "HARDWARE_ADDRESS": "0c11.c540.fbe2",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.41",
+          "AGE_MIN": "239",
+          "HARDWARE_ADDRESS": "0cf6.f5eb.800b",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.42",
+          "AGE_MIN": "227",
+          "HARDWARE_ADDRESS": "0cfc.f798.800b",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.43",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0cdb.c454.800b",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        }
+      ]
+    },
+    "eng-spine-1": {
+      "template": "arista_eos_show_ip_arp",
+      "score": 80.24,
+      "vendor": "Arista",
+      "platform": "Arista EOS",
+      "record_count": 9,
+      "records": [
+        {
+          "IP_ADDRESS": "172.16.2.1",
+          "AGE": "0:00:00",
+          "MAC_ADDRESS": "0c00.9d13.0002",
+          "INTERFACE": "Ethernet1",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.11.3",
+          "AGE": "2:36:17",
+          "MAC_ADDRESS": "0c11.c540.fbe2",
+          "INTERFACE": "Vlan11, Ethernet2",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.11.41",
+          "AGE": "2:26:41",
+          "MAC_ADDRESS": "0cf6.f5eb.800b",
+          "INTERFACE": "Vlan11, not learned",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.11.42",
+          "AGE": "2:17:05",
+          "MAC_ADDRESS": "0cfc.f798.800b",
+          "INTERFACE": "Vlan11, not learned",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.11.43",
+          "AGE": "1:09:52",
+          "MAC_ADDRESS": "0cdb.c454.800b",
+          "INTERFACE": "Vlan11, not learned",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.50.6",
+          "AGE": "0:02:38",
+          "MAC_ADDRESS": "0c11.c540.fbe2",
+          "INTERFACE": "Vlan50, Ethernet2",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.210.3",
+          "AGE": "2:26:41",
+          "MAC_ADDRESS": "0c11.c540.fbe2",
+          "INTERFACE": "Vlan210, Ethernet2",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.211.3",
+          "AGE": "0:07:27",
+          "MAC_ADDRESS": "0c11.c540.fbe2",
+          "INTERFACE": "Vlan211, Ethernet2",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.212.3",
+          "AGE": "2:31:29",
+          "MAC_ADDRESS": "0c11.c540.fbe2",
+          "INTERFACE": "Vlan212, Ethernet2",
+          "VRF": ""
+        }
+      ]
+    },
+    "wan-core-1": {
+      "template": "cisco_ios_show_arp",
+      "score": 84.29,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 6,
+      "records": [
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.1.1",
+          "AGE_MIN": "0",
+          "HARDWARE_ADDRESS": "1e0e.d786.d83e",
+          "TYPE": "ARPA",
+          "INTERFACE": "Ethernet1/0"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.1.2",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "ca01.4194.001c",
+          "TYPE": "ARPA",
+          "INTERFACE": "Ethernet1/0"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.100.1",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "ca01.4194.001d",
+          "TYPE": "ARPA",
+          "INTERFACE": "Ethernet1/1"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.100.2",
+          "AGE_MIN": "72",
+          "HARDWARE_ADDRESS": "0cb3.9361.0000",
+          "TYPE": "ARPA",
+          "INTERFACE": "Ethernet1/1"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.128.1",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "ca01.4194.001e",
+          "TYPE": "ARPA",
+          "INTERFACE": "Ethernet1/2"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.128.2",
+          "AGE_MIN": "119",
+          "HARDWARE_ADDRESS": "0c00.9d13.0001",
+          "TYPE": "ARPA",
+          "INTERFACE": "Ethernet1/2"
+        }
+      ]
+    },
+    "eng-rtr-1": {
+      "template": "cisco_ios_show_arp",
+      "score": 87.14,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 8,
+      "records": [
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.2.1",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0c00.9d13.0002",
+          "TYPE": "ARPA",
+          "INTERFACE": "GigabitEthernet0/2"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.2.2",
+          "AGE_MIN": "224",
+          "HARDWARE_ADDRESS": "0c1e.0e4f.f0a7",
+          "TYPE": "ARPA",
+          "INTERFACE": "GigabitEthernet0/2"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.2.5",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0c00.9d13.0003",
+          "TYPE": "ARPA",
+          "INTERFACE": "GigabitEthernet0/3"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.2.6",
+          "AGE_MIN": "219",
+          "HARDWARE_ADDRESS": "0c11.c540.fbe2",
+          "TYPE": "ARPA",
+          "INTERFACE": "GigabitEthernet0/3"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.128.1",
+          "AGE_MIN": "119",
+          "HARDWARE_ADDRESS": "ca01.4194.001e",
+          "TYPE": "ARPA",
+          "INTERFACE": "GigabitEthernet0/1"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.128.2",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0c00.9d13.0001",
+          "TYPE": "ARPA",
+          "INTERFACE": "GigabitEthernet0/1"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.128.5",
+          "AGE_MIN": "136",
+          "HARDWARE_ADDRESS": "0cb3.9361.0003",
+          "TYPE": "ARPA",
+          "INTERFACE": "GigabitEthernet0/0"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.128.6",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0c00.9d13.0000",
+          "TYPE": "ARPA",
+          "INTERFACE": "GigabitEthernet0/0"
+        }
+      ]
+    },
+    "usa-leaf-2": {
+      "template": "cisco_ios_show_arp",
+      "score": 87.14,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 8,
+      "records": [
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.1",
+          "AGE_MIN": "0",
+          "HARDWARE_ADDRESS": "0000.5e00.0101",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.2",
+          "AGE_MIN": "84",
+          "HARDWARE_ADDRESS": "0caf.da85.dc95",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.3",
+          "AGE_MIN": "74",
+          "HARDWARE_ADDRESS": "0c82.f1c3.6619",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.21",
+          "AGE_MIN": "115",
+          "HARDWARE_ADDRESS": "0c5c.72f7.800a",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.22",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0c89.c3d1.800a",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.23",
+          "AGE_MIN": "107",
+          "HARDWARE_ADDRESS": "0c53.c9a1.800a",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.111.2",
+          "AGE_MIN": "190",
+          "HARDWARE_ADDRESS": "0caf.da85.dc95",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan111"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.111.12",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0c89.c3d1.806f",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan111"
+        }
+      ]
+    },
+    "usa-leaf-1": {
+      "template": "cisco_ios_show_arp",
+      "score": 87.14,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 8,
+      "records": [
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.1",
+          "AGE_MIN": "0",
+          "HARDWARE_ADDRESS": "0000.5e00.0101",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.2",
+          "AGE_MIN": "84",
+          "HARDWARE_ADDRESS": "0caf.da85.dc95",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.3",
+          "AGE_MIN": "74",
+          "HARDWARE_ADDRESS": "0c82.f1c3.6619",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.21",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0c5c.72f7.800a",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.22",
+          "AGE_MIN": "106",
+          "HARDWARE_ADDRESS": "0c89.c3d1.800a",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.10.23",
+          "AGE_MIN": "115",
+          "HARDWARE_ADDRESS": "0c53.c9a1.800a",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan10"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.111.2",
+          "AGE_MIN": "189",
+          "HARDWARE_ADDRESS": "0caf.da85.dc95",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan111"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.111.11",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0c5c.72f7.806f",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan111"
+        }
+      ]
+    },
+    "eng-leaf-1": {
+      "template": "cisco_ios_show_arp",
+      "score": 84.29,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 6,
+      "records": [
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.1",
+          "AGE_MIN": "0",
+          "HARDWARE_ADDRESS": "0000.5e00.0101",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.2",
+          "AGE_MIN": "55",
+          "HARDWARE_ADDRESS": "0c1e.0e4f.f0a7",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.3",
+          "AGE_MIN": "98",
+          "HARDWARE_ADDRESS": "0c11.c540.fbe2",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.41",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0cf6.f5eb.800b",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.42",
+          "AGE_MIN": "227",
+          "HARDWARE_ADDRESS": "0cfc.f798.800b",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.11.43",
+          "AGE_MIN": "239",
+          "HARDWARE_ADDRESS": "0cdb.c454.800b",
+          "TYPE": "ARPA",
+          "INTERFACE": "Vlan11"
+        }
+      ]
+    },
+    "usa-spine-2": {
+      "template": "arista_eos_show_ip_arp",
+      "score": 80.24,
+      "vendor": "Arista",
+      "platform": "Arista EOS",
+      "record_count": 9,
+      "records": [
+        {
+          "IP_ADDRESS": "172.16.1.5",
+          "AGE": "0:00:00",
+          "MAC_ADDRESS": "0cb3.9361.0002",
+          "INTERFACE": "Ethernet1",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.10.2",
+          "AGE": "0:26:43",
+          "MAC_ADDRESS": "0caf.da85.dc95",
+          "INTERFACE": "Vlan10, Ethernet2",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.10.21",
+          "AGE": "1:43:32",
+          "MAC_ADDRESS": "0c5c.72f7.800a",
+          "INTERFACE": "Vlan10, not learned",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.10.22",
+          "AGE": "1:53:09",
+          "MAC_ADDRESS": "0c89.c3d1.800a",
+          "INTERFACE": "Vlan10, not learned",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.10.23",
+          "AGE": "1:43:32",
+          "MAC_ADDRESS": "0c53.c9a1.800a",
+          "INTERFACE": "Vlan10, not learned",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.50.1",
+          "AGE": "0:17:07",
+          "MAC_ADDRESS": "0caf.da85.dc95",
+          "INTERFACE": "Vlan50, Ethernet2",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.110.2",
+          "AGE": "0:31:31",
+          "MAC_ADDRESS": "0caf.da85.dc95",
+          "INTERFACE": "Vlan110, Ethernet2",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.111.2",
+          "AGE": "0:36:19",
+          "MAC_ADDRESS": "0caf.da85.dc95",
+          "INTERFACE": "Vlan111, Ethernet2",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.112.2",
+          "AGE": "3:00:22",
+          "MAC_ADDRESS": "0caf.da85.dc95",
+          "INTERFACE": "Vlan112, Ethernet2",
+          "VRF": ""
+        }
+      ]
+    },
+    "eng-spine-2": {
+      "template": "arista_eos_show_ip_arp",
+      "score": 80.24,
+      "vendor": "Arista",
+      "platform": "Arista EOS",
+      "record_count": 9,
+      "records": [
+        {
+          "IP_ADDRESS": "172.16.2.5",
+          "AGE": "0:00:00",
+          "MAC_ADDRESS": "0c00.9d13.0003",
+          "INTERFACE": "Ethernet1",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.11.2",
+          "AGE": "2:17:03",
+          "MAC_ADDRESS": "0c1e.0e4f.f0a7",
+          "INTERFACE": "Vlan11, Ethernet2",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.11.41",
+          "AGE": "1:57:51",
+          "MAC_ADDRESS": "0cf6.f5eb.800b",
+          "INTERFACE": "Vlan11, not learned",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.11.42",
+          "AGE": "2:31:27",
+          "MAC_ADDRESS": "0cfc.f798.800b",
+          "INTERFACE": "Vlan11, not learned",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.11.43",
+          "AGE": "1:57:51",
+          "MAC_ADDRESS": "0cdb.c454.800b",
+          "INTERFACE": "Vlan11, not learned",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.50.5",
+          "AGE": "0:45:49",
+          "MAC_ADDRESS": "0c1e.0e4f.f0a7",
+          "INTERFACE": "Vlan50, Ethernet2",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.210.2",
+          "AGE": "0:17:01",
+          "MAC_ADDRESS": "0c1e.0e4f.f0a7",
+          "INTERFACE": "Vlan210, Ethernet2",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.211.2",
+          "AGE": "3:14:40",
+          "MAC_ADDRESS": "0c1e.0e4f.f0a7",
+          "INTERFACE": "Vlan211, Ethernet2",
+          "VRF": ""
+        },
+        {
+          "IP_ADDRESS": "172.16.212.2",
+          "AGE": "0:36:13",
+          "MAC_ADDRESS": "0c1e.0e4f.f0a7",
+          "INTERFACE": "Vlan212, Ethernet2",
+          "VRF": ""
+        }
+      ]
+    },
+    "usa-rtr-1": {
+      "template": "cisco_ios_show_arp",
+      "score": 85.71,
+      "vendor": "Cisco",
+      "platform": "Cisco IOS",
+      "record_count": 7,
+      "records": [
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.0.1",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0cb3.9361.0001",
+          "TYPE": "ARPA",
+          "INTERFACE": "GigabitEthernet0/1"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.1.5",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0cb3.9361.0002",
+          "TYPE": "ARPA",
+          "INTERFACE": "GigabitEthernet0/2"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.1.6",
+          "AGE_MIN": "209",
+          "HARDWARE_ADDRESS": "0c82.f1c3.6619",
+          "TYPE": "ARPA",
+          "INTERFACE": "GigabitEthernet0/2"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.100.1",
+          "AGE_MIN": "72",
+          "HARDWARE_ADDRESS": "ca01.4194.001d",
+          "TYPE": "ARPA",
+          "INTERFACE": "GigabitEthernet0/0"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.100.2",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0cb3.9361.0000",
+          "TYPE": "ARPA",
+          "INTERFACE": "GigabitEthernet0/0"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.128.5",
+          "AGE_MIN": "-",
+          "HARDWARE_ADDRESS": "0cb3.9361.0003",
+          "TYPE": "ARPA",
+          "INTERFACE": "GigabitEthernet0/3"
+        },
+        {
+          "PROTOCOL": "Internet",
+          "ADDRESS": "172.16.128.6",
+          "AGE_MIN": "136",
+          "HARDWARE_ADDRESS": "0c00.9d13.0000",
+          "TYPE": "ARPA",
+          "INTERFACE": "GigabitEthernet0/3"
+        }
+      ]
+    }
+  }
+}
