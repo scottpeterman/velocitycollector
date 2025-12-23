@@ -28,6 +28,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QSize, QUrl
 from PyQt6.QtGui import QFont, QAction, QDesktopServices, QPixmap
 
+from vcollector.importers.velocitymaps_importer import VelocityMapsImportDialog
 from vcollector.ui.styles import get_stylesheet
 from vcollector.ui.widgets.credentials_view import CredentialsView
 from vcollector.ui.widgets.devices_view import DevicesView
@@ -38,7 +39,7 @@ from vcollector.ui.widgets.platforms_view import PlatformsView
 from vcollector.ui.widgets.run_view import RunView
 from vcollector.ui.widgets.sites_view import SitesView
 from vcollector.ui.widgets.vault_view import VaultView
-
+VELOCITYMAPS_AVAILABLE = True
 # Import vault resolver
 try:
     from vcollector.vault.resolver import CredentialResolver
@@ -343,6 +344,34 @@ class VelocityCollectorGUI(QMainWindow):
             lambda: self.show_view(self.VIEW_VAULT)
         )
 
+    def import_velocitymaps(self):
+        """Open VelocityMaps import dialog."""
+        if not VELOCITYMAPS_AVAILABLE:
+            QMessageBox.warning(
+                self, "Not Available",
+                "VelocityMaps importer is not available.\n\n"
+                "Make sure velocitymaps_importer.py is in vcollector/importers/"
+            )
+            return
+
+        # Get the repository from devices view
+        repo = None
+        if hasattr(self, 'devices_view') and hasattr(self.devices_view, 'repo'):
+            repo = self.devices_view.repo
+
+        if repo is None:
+            QMessageBox.warning(
+                self, "No Database",
+                "Please open a database first."
+            )
+            return
+
+        dialog =    VelocityMapsImportDialog(repo, parent=self)
+        if dialog.exec():
+            # Refresh devices view after import
+            self.devices_view.refresh()
+
+
     def on_vault_unlocked(self):
         """Handle vault unlock."""
         # Share resolver with credentials view
@@ -374,6 +403,13 @@ class VelocityCollectorGUI(QMainWindow):
         file_menu.addAction(open_db_action)
 
         file_menu.addSeparator()
+
+        import_menu = file_menu.addMenu("Import")
+
+        velocitymaps_action = QAction("VelocityMaps Discovery...", self)
+        velocitymaps_action.triggered.connect(self.import_velocitymaps)
+        velocitymaps_action.setEnabled(True)
+        import_menu.addAction(velocitymaps_action)
 
         settings_action = QAction("Settings...", self)
         settings_action.setShortcut("Ctrl+,")

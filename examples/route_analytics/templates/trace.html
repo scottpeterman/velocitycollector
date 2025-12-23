@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+{% block title %}Path Trace{% endblock %}
+
+{% block head %}
+<style>
+    .trace-input {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto auto;
+        gap: 0.5rem;
+        align-items: end;
+    }
+    .trace-input label {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+    }
+    .trace-input input {
+        width: 100%;
+    }
+
+    .trace-summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .trace-stat {
+        text-align: center;
+        padding: 1rem;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+    }
+    .trace-stat .value {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    .trace-stat .label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+    }
+    .trace-stat.asymmetric {
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+    .trace-stat.asymmetric .value {
+        color: var(--error);
+    }
+    .trace-stat.symmetric .value {
+        color: var(--success);
+    }
+
+    .path-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    .path-section {
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    .path-section h3 {
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .path-section h3 .arrow {
+        font-size: 1.25rem;
+    }
+    .forward-path h3 { color: var(--accent); }
+    .return-path h3 { color: var(--success); }
+
+    .path-tree {
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        line-height: 1.6;
+    }
+    .hop {
+        margin-left: 1.5rem;
+        position: relative;
+    }
+    .hop::before {
+        content: '';
+        position: absolute;
+        left: -1rem;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: var(--border);
+    }
+    .hop:last-child::before {
+        bottom: 50%;
+    }
+    .hop-line {
+        position: relative;
+        padding: 0.25rem 0;
+    }
+    .hop-line::before {
+        content: '├─';
+        position: absolute;
+        left: -1.5rem;
+        color: var(--border);
+    }
+    .hop:last-child > .hop-line::before {
+        content: '└─';
+    }
+
+    .device-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    .prefix-info {
+        color: var(--text-secondary);
+    }
+    .protocol-badge {
+        display: inline-block;
+        padding: 0.125rem 0.375rem;
+        background: var(--bg-primary);
+        border-radius: 3px;
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+    }
+    .next-hop {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+    }
+
+    .tag {
+        display: inline-block;
+        padding: 0.125rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+    .tag-destination {
+        background: rgba(34, 197, 94, 0.2);
+        color: var(--success);
+    }
+    .tag-exit {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--error);
+    }
+    .tag-ecmp {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--accent);
+    }
+    .tag-connected {
+        background: rgba(34, 197, 94, 0.1);
+        color: var(--success);
+    }
+
+    .device-lookup {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+    }
+    .device-lookup span {
+        color: var(--text-secondary);
+    }
+    .device-lookup strong {
+        color: var(--text-primary);
+    }
+
+    @media (max-width: 900px) {
+        .trace-input {
+            grid-template-columns: 1fr 1fr;
+        }
+        .path-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Virtual Path Trace</h1>
+
+<div class="card">
+    <div class="trace-input">
+        <div>
+            <label>Source IP</label>
+            <input type="text" id="source-ip" placeholder="e.g., 10.47.32.15">
+        </div>
+        <div>
+            <label>Destination IP</label>
+            <input type="text" id="dest-ip" placeholder="e.g., 2001:db8::1">
+        </div>
+        <div>
+            <label>VRF</label>
+            <input type="text" id="vrf" placeholder="default" style="width: 120px;">
+        </div>
+        <div>
+            <label>&nbsp;</label>
+            <button onclick="runTrace()">Trace</button>
+        </div>
+    </div>
+    <div class="device-lookup" id="device-lookup" style="display: none;">
+        <span>Source: <strong id="src-device">-</strong></span>
+        <span>Destination: <strong id="dst-device">-</strong></span>
+    </div>
+    <p class="text-muted mt-1">Trace all possible forward and return paths using RIB data with ECMP visibility</p>
+</div>
+
+<div id="loading" style="display: none; text-align: center; padding: 2rem;">
+    <div class="spinner"></div>
+    <p class="text-muted mt-1">Tracing paths...</p>
+</div>
+
+<div id="error" class="card" style="display: none; border-color: var(--error);">
+    <p style="color: var(--error);" id="error-text"></p>
+</div>
+
+<div id="results" style="display: none;">
+    <div class="trace-summary">
+        <div class="trace-stat">
+            <div class="value" id="forward-hops">-</div>
+            <div class="label">Forward Hops</div>
+        </div>
+        <div class="trace-stat">
+            <div class="value" id="forward-paths">-</div>
+            <div class="label">Forward Paths (ECMP)</div>
+        </div>
+        <div class="trace-stat">
+            <div class="value" id="return-hops">-</div>
+            <div class="label">Return Hops</div>
+        </div>
+        <div class="trace-stat" id="asymmetry-stat">
+            <div class="value" id="asymmetry">-</div>
+            <div class="label">Routing Symmetry</div>
+        </div>
+    </div>
+
+    <div class="path-container">
+        <div class="path-section forward-path">
+            <h3><span class="arrow">→</span> Forward Path</h3>
+            <div class="path-tree" id="forward-tree"></div>
+        </div>
+        <div class="path-section return-path">
+            <h3><span class="arrow">←</span> Return Path</h3>
+            <div class="path-tree" id="return-tree"></div>
+        </div>
+    </div>
+
+    <div class="card mt-2" id="notes-section" style="display: none;">
+        <h3>Notes</h3>
+        <ul id="notes-list"></ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const sourceInput = document.getElementById('source-ip');
+const destInput = document.getElementById('dest-ip');
+const vrfInput = document.getElementById('vrf');
+
+// Enter key triggers trace
+[sourceInput, destInput, vrfInput].forEach(input => {
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') runTrace();
+    });
+});
+
+// Live lookup of source device
+sourceInput.addEventListener('blur', async () => {
+    const ip = sourceInput.value.trim();
+    if (!ip) return;
+
+    try {
+        const resp = await fetch(`/api/trace/device/${encodeURIComponent(ip)}`);
+        const data = await resp.json();
+
+        document.getElementById('device-lookup').style.display = 'flex';
+        document.getElementById('src-device').textContent = data.device || 'Not found';
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+async function runTrace() {
+    const source = sourceInput.value.trim();
+    const dest = destInput.value.trim();
+    const vrf = vrfInput.value.trim() || 'default';
+
+    if (!source || !dest) {
+        showError('Please enter both source and destination IPs');
+        return;
+    }
+
+    // Reset UI
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('error').style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
+
+    try {
+        const url = `/api/trace?source=${encodeURIComponent(source)}&dest=${encodeURIComponent(dest)}&vrf=${encodeURIComponent(vrf)}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+
+        document.getElementById('loading').style.display = 'none';
+
+        if (data.errors && data.errors.length > 0 && !data.forward_path) {
+            showError(data.errors.join(', '));
+            return;
+        }
+
+        // Show results
+        document.getElementById('results').style.display = 'block';
+
+        // Update summary stats
+        document.getElementById('forward-hops').textContent = data.forward_hop_count || 0;
+        document.getElementById('forward-paths').textContent = data.forward_path_count || 0;
+        document.getElementById('return-hops').textContent = data.return_hop_count || 0;
+
+        const asymStat = document.getElementById('asymmetry-stat');
+        const asymValue = document.getElementById('asymmetry');
+        if (data.is_asymmetric) {
+            asymValue.textContent = 'ASYMMETRIC';
+            asymStat.className = 'trace-stat asymmetric';
+        } else {
+            asymValue.textContent = 'Symmetric';
+            asymStat.className = 'trace-stat symmetric';
+        }
+
+        // Update device lookup
+        document.getElementById('device-lookup').style.display = 'flex';
+        document.getElementById('src-device').textContent = data.source_device || 'Not found';
+        document.getElementById('dst-device').textContent = data.destination_device || 'External';
+
+        // Render path trees
+        document.getElementById('forward-tree').innerHTML = renderPathTree(data.forward_path);
+        document.getElementById('return-tree').innerHTML = renderPathTree(data.return_path);
+
+        // Show notes if any
+        if (data.errors && data.errors.length > 0) {
+            document.getElementById('notes-section').style.display = 'block';
+            document.getElementById('notes-list').innerHTML = data.errors.map(e => `<li>${e}</li>`).join('');
+        } else {
+            document.getElementById('notes-section').style.display = 'none';
+        }
+
+    } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        showError(err.message);
+    }
+}
+
+function renderPathTree(hop, isRoot = true) {
+    if (!hop) return '<span class="text-muted">No path found</span>';
+
+    let html = '';
+
+    // Build hop line
+    let tags = '';
+    if (hop.is_destination) tags += '<span class="tag tag-destination">DESTINATION</span>';
+    else if (hop.is_exit) tags += '<span class="tag tag-exit">EXIT</span>';
+    else if (hop.is_connected) tags += '<span class="tag tag-connected">CONNECTED</span>';
+
+    if (hop.children && hop.children.length > 1) {
+        tags += `<span class="tag tag-ecmp">ECMP ×${hop.children.length}</span>`;
+    }
+
+    const nextHops = hop.next_hops && hop.next_hops.length > 0 && !hop.is_destination
+        ? `<div class="next-hop">→ ${hop.next_hops.slice(0, 3).join(', ')}${hop.next_hops.length > 3 ? '...' : ''}</div>`
+        : '';
+
+    const content = `
+        <div class="hop-line">
+            <span class="device-name">${hop.device}</span>
+            <span class="protocol-badge">${hop.protocol || '-'}</span>
+            ${tags}
+            <div class="prefix-info">${hop.prefix_matched || ''}</div>
+            ${nextHops}
+        </div>
+    `;
+
+    if (isRoot) {
+        html = content;
+    } else {
+        html = `<div class="hop">${content}</div>`;
+    }
+
+    // Render children
+    if (hop.children && hop.children.length > 0) {
+        const childrenHtml = hop.children.map(child => renderPathTree(child, false)).join('');
+        if (isRoot) {
+            html += `<div class="hop">${childrenHtml}</div>`;
+        } else {
+            html = `<div class="hop">${content}${childrenHtml}</div>`;
+        }
+    }
+
+    return html;
+}
+
+function showError(msg) {
+    document.getElementById('error').style.display = 'block';
+    document.getElementById('error-text').textContent = msg;
+}
+</script>
+{% endblock %}

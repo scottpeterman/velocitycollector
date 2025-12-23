@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+{% block title %}Sites{% endblock %}
+
+{% block head %}
+<style>
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .view-toggle button {
+        padding: 0.5rem 1rem;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        cursor: pointer;
+        color: var(--text-secondary);
+    }
+    .view-toggle button.active {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+    }
+    .v6-bar {
+        height: 8px;
+        background: var(--bg-secondary);
+        border-radius: 4px;
+        overflow: hidden;
+        min-width: 100px;
+    }
+    .v6-bar-fill {
+        height: 100%;
+        background: var(--success);
+        border-radius: 4px;
+    }
+    .v6-highlight {
+        color: var(--success);
+        font-weight: 500;
+    }
+    .v4-text {
+        color: var(--accent);
+    }
+    .site-row:hover {
+        background: var(--bg-secondary);
+    }
+    .migration-card {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(59, 130, 246, 0.1));
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    .protocol-chip {
+        display: inline-block;
+        padding: 0.125rem 0.5rem;
+        background: var(--bg-secondary);
+        border-radius: 4px;
+        font-size: 0.75rem;
+        margin-right: 0.25rem;
+    }
+    .protocol-chip.v6 {
+        background: rgba(34, 197, 94, 0.2);
+        color: var(--success);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Sites Overview</h1>
+
+<div class="card-grid mb-2">
+    <div class="stat-card">
+        <div class="value">{{ sites | length }}</div>
+        <div class="label">Total Sites</div>
+    </div>
+    <div class="stat-card">
+        <div class="value" id="total-devices">{{ sites.values() | map(attribute='devices') | map('length') | sum }}</div>
+        <div class="label">Total Devices</div>
+    </div>
+    <div class="stat-card">
+        <div class="value v6-highlight" id="total-v6">-</div>
+        <div class="label">Total IPv6 Prefixes</div>
+    </div>
+    <div class="stat-card">
+        <div class="value" id="v6-coverage">-</div>
+        <div class="label">Sites with IPv6</div>
+    </div>
+</div>
+
+<div class="view-toggle">
+    <button id="btn-standard" class="active" onclick="showView('standard')">Standard View</button>
+    <button id="btn-migration" onclick="showView('migration')">IPv6 Migration View</button>
+</div>
+
+<!-- Standard View -->
+<div id="view-standard" class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Site</th>
+                <th class="text-right">Devices</th>
+                <th class="text-right">Total</th>
+                <th class="text-right">IPv4</th>
+                <th class="text-right">IPv6</th>
+                <th>IPv6 %</th>
+                <th>Top Protocol</th>
+            </tr>
+        </thead>
+        <tbody id="standard-table">
+            {% for name, site in sites | dictsort %}
+            {% set v4 = site.get('ipv4_prefixes', 0) %}
+            {% set v6 = site.get('ipv6_prefixes', 0) %}
+            {% set total = site.get('total_prefixes', 0) %}
+            {% set v6_pct = (v6 / total * 100) if total > 0 else 0 %}
+            {% set proto = site.get('by_protocol', {}) %}
+            {% set top_proto = (proto | dictsort(by='value', reverse=true) | first)[0] if proto else '-' %}
+            <tr class="site-row" data-site="{{ name }}">
+                <td><strong>{{ name }}</strong></td>
+                <td class="text-right">{{ site.get('devices', []) | length }}</td>
+                <td class="text-right mono">{{ "{:,}".format(total) }}</td>
+                <td class="text-right mono v4-text">{{ "{:,}".format(v4) }}</td>
+                <td class="text-right mono v6-highlight">{{ "{:,}".format(v6) }}</td>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <div class="v6-bar">
+                            <div class="v6-bar-fill" style="width: {{ v6_pct }}%;"></div>
+                        </div>
+                        <span class="mono text-muted" style="font-size: 0.75rem;">{{ "%.1f"|format(v6_pct) }}%</span>
+                    </div>
+                </td>
+                <td>{{ top_proto }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Migration View -->
+<div id="view-migration" class="card migration-card" style="display: none;">
+    <h2>IPv6 Migration Comparison</h2>
+    <p class="text-muted mb-2">Sites sorted by IPv6 prefix count - compare source and destination DCs</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Site</th>
+                <th class="text-right">IPv6 Prefixes</th>
+                <th>IPv6 Coverage</th>
+                <th>IPv6 Classifications</th>
+                <th>IPv6 Protocols</th>
+            </tr>
+        </thead>
+        <tbody id="migration-table"></tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h2>Site Details</h2>
+    <div id="site-details">
+        <p class="text-muted">Click a site row to see device details and IPv4/IPv6 breakdown</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const sites = {{ sites | tojson }};
+
+// Calculate totals
+let totalV6 = 0;
+let sitesWithV6 = 0;
+
+Object.values(sites).forEach(site => {
+    const v6 = site.ipv6_prefixes || 0;
+    totalV6 += v6;
+    if (v6 > 0) sitesWithV6++;
+});
+
+document.getElementById('total-v6').textContent = totalV6.toLocaleString();
+document.getElementById('v6-coverage').textContent = `${sitesWithV6} / ${Object.keys(sites).length}`;
+
+// Build migration view (sorted by v6 count)
+const sortedSites = Object.entries(sites)
+    .map(([name, site]) => ({ name, ...site }))
+    .sort((a, b) => (b.ipv6_prefixes || 0) - (a.ipv6_prefixes || 0));
+
+const migrationTable = document.getElementById('migration-table');
+migrationTable.innerHTML = sortedSites.map(site => {
+    const v6 = site.ipv6_prefixes || 0;
+    const total = site.total_prefixes || 0;
+    const v6Pct = total > 0 ? (v6 / total * 100) : 0;
+
+    // Get v6 classifications
+    const v6Class = site.by_classification_v6 || {};
+    const v6ClassChips = Object.entries(v6Class)
+        .filter(([_, count]) => count > 0)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([cls, count]) => `<span class="badge badge-${cls}" style="font-size: 0.7rem;">${cls}: ${count.toLocaleString()}</span>`)
+        .join(' ');
+
+    // Get v6 protocols
+    const v6Proto = site.by_protocol_v6 || {};
+    const v6ProtoChips = Object.entries(v6Proto)
+        .filter(([_, count]) => count > 0)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([proto, count]) => `<span class="protocol-chip v6">${proto}: ${count.toLocaleString()}</span>`)
+        .join('');
+
+    return `
+        <tr class="site-row" data-site="${site.name}">
+            <td><strong>${site.name}</strong></td>
+            <td class="text-right mono v6-highlight">${v6.toLocaleString()}</td>
+            <td>
+                <div class="flex items-center gap-2">
+                    <div class="v6-bar" style="min-width: 150px;">
+                        <div class="v6-bar-fill" style="width: ${v6Pct}%;"></div>
+                    </div>
+                    <span class="mono" style="font-size: 0.75rem;">${v6Pct.toFixed(1)}%</span>
+                </div>
+            </td>
+            <td>${v6ClassChips || '<span class="text-muted">-</span>'}</td>
+            <td>${v6ProtoChips || '<span class="text-muted">-</span>'}</td>
+        </tr>
+    `;
+}).join('');
+
+// View toggle
+function showView(view) {
+    document.getElementById('view-standard').style.display = view === 'standard' ? 'block' : 'none';
+    document.getElementById('view-migration').style.display = view === 'migration' ? 'block' : 'none';
+    document.getElementById('btn-standard').className = view === 'standard' ? 'active' : '';
+    document.getElementById('btn-migration').className = view === 'migration' ? 'active' : '';
+}
+
+// Click handlers for both tables
+document.querySelectorAll('.site-row').forEach(row => {
+    row.style.cursor = 'pointer';
+    row.addEventListener('click', () => {
+        const siteName = row.dataset.site;
+        showSiteDetails(siteName);
+    });
+});
+
+function showSiteDetails(siteName) {
+    const site = sites[siteName];
+    if (!site) return;
+
+    const v4 = site.ipv4_prefixes || 0;
+    const v6 = site.ipv6_prefixes || 0;
+    const total = site.total_prefixes || 0;
+
+    const el = document.getElementById('site-details');
+    el.innerHTML = `
+        <h3 style="margin-bottom: 1rem;">${siteName}</h3>
+
+        <div class="flex gap-2 mb-2">
+            <div class="stat-card" style="flex: 1; padding: 1rem;">
+                <div class="value" style="font-size: 1.5rem;">${total.toLocaleString()}</div>
+                <div class="label">Total Prefixes</div>
+            </div>
+            <div class="stat-card" style="flex: 1; padding: 1rem;">
+                <div class="value v4-text" style="font-size: 1.5rem;">${v4.toLocaleString()}</div>
+                <div class="label">IPv4</div>
+            </div>
+            <div class="stat-card" style="flex: 1; padding: 1rem;">
+                <div class="value v6-highlight" style="font-size: 1.5rem;">${v6.toLocaleString()}</div>
+                <div class="label">IPv6</div>
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            <div style="flex: 1;">
+                <h4 style="font-size: 0.875rem; color: var(--text-secondary);">Devices (${site.devices.length})</h4>
+                <ul style="list-style: none; margin-top: 0.5rem; max-height: 200px; overflow-y: auto;">
+                    ${site.devices.map(d => `<li class="mono" style="padding: 0.25rem 0;">${d}</li>`).join('')}
+                </ul>
+            </div>
+            <div style="flex: 1;">
+                <h4 style="font-size: 0.875rem; color: var(--text-secondary);">By Protocol</h4>
+                <table style="margin-top: 0.5rem;">
+                    <thead>
+                        <tr>
+                            <th>Protocol</th>
+                            <th class="text-right">Total</th>
+                            <th class="text-right v4-text">v4</th>
+                            <th class="text-right v6-highlight">v6</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    ${Object.entries(site.by_protocol || {})
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([proto, count]) => {
+                            const pv4 = (site.by_protocol_v4 || {})[proto] || 0;
+                            const pv6 = (site.by_protocol_v6 || {})[proto] || 0;
+                            return `
+                                <tr>
+                                    <td>${proto}</td>
+                                    <td class="text-right mono">${count.toLocaleString()}</td>
+                                    <td class="text-right mono text-muted">${pv4.toLocaleString()}</td>
+                                    <td class="text-right mono v6-highlight">${pv6.toLocaleString()}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div style="flex: 1;">
+                <h4 style="font-size: 0.875rem; color: var(--text-secondary);">By Classification</h4>
+                <table style="margin-top: 0.5rem;">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th class="text-right">Total</th>
+                            <th class="text-right v4-text">v4</th>
+                            <th class="text-right v6-highlight">v6</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    ${Object.entries(site.by_classification || {})
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([cls, count]) => {
+                            const cv4 = (site.by_classification_v4 || {})[cls] || 0;
+                            const cv6 = (site.by_classification_v6 || {})[cls] || 0;
+                            return `
+                                <tr>
+                                    <td><span class="badge badge-${cls}">${cls}</span></td>
+                                    <td class="text-right mono">${count.toLocaleString()}</td>
+                                    <td class="text-right mono text-muted">${cv4.toLocaleString()}</td>
+                                    <td class="text-right mono v6-highlight">${cv6.toLocaleString()}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+</script>
+{% endblock %}

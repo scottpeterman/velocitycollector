@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% block title %}Browse Prefixes{% endblock %}
+
+{% block head %}
+<style>
+    .af-badge {
+        display: inline-block;
+        padding: 0.125rem 0.375rem;
+        border-radius: 3px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        min-width: 24px;
+        text-align: center;
+    }
+    .af-v4 {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--accent);
+    }
+    .af-v6 {
+        background: rgba(34, 197, 94, 0.2);
+        color: var(--success);
+    }
+    .filter-row {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .filter-row select, .filter-row input {
+        height: 38px;
+    }
+    .result-stats {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.875rem;
+    }
+    .result-stats .v4 { color: var(--accent); }
+    .result-stats .v6 { color: var(--success); }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Browse Prefixes</h1>
+
+<div class="card">
+    <div class="filter-row">
+        <select id="classification" style="width: 180px;">
+            <option value="">All Classifications</option>
+            {% for cls in classifications %}
+            <option value="{{ cls }}">{{ cls }}</option>
+            {% endfor %}
+        </select>
+        <select id="family" style="width: 140px;">
+            <option value="">All Families</option>
+            <option value="ipv4">IPv4 only</option>
+            <option value="ipv6">IPv6 only</option>
+        </select>
+        <select id="protocol" style="width: 140px;">
+            <option value="">All Protocols</option>
+        </select>
+        <input type="text" id="search" placeholder="Filter by device name..." style="flex: 1; min-width: 200px;">
+        <button onclick="loadPrefixes()">Search</button>
+    </div>
+</div>
+
+<div id="loading" style="display: none; text-align: center; padding: 2rem;">
+    <div class="spinner"></div>
+</div>
+
+<div id="results" class="card" style="display: none;">
+    <div class="flex justify-between items-center mb-2">
+        <div>
+            <h2 style="display: inline;">Prefixes </h2>
+            <span id="result-count" class="text-muted"></span>
+            <div class="result-stats" id="result-stats"></div>
+        </div>
+        <div class="flex gap-2">
+            <button class="btn btn-secondary" onclick="prevPage()" id="prev-btn" disabled>← Prev</button>
+            <button class="btn btn-secondary" onclick="nextPage()" id="next-btn">Next →</button>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Prefix</th>
+                <th>AF</th>
+                <th>Classification</th>
+                <th>Protocol</th>
+                <th>VRF</th>
+                <th class="text-right">Devices</th>
+                <th>Next Hops</th>
+            </tr>
+        </thead>
+        <tbody id="prefix-table"></tbody>
+    </table>
+
+    <div id="pagination" class="mt-2 text-muted text-right"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentOffset = 0;
+const limit = 100;
+let totalResults = 0;
+
+// Load protocols for filter dropdown
+async function loadProtocols() {
+    try {
+        const resp = await fetch('/api/protocols');
+        const data = await resp.json();
+        const select = document.getElementById('protocol');
+        Object.keys(data).sort().forEach(proto => {
+            const opt = document.createElement('option');
+            opt.value = proto;
+            opt.textContent = proto;
+            select.appendChild(opt);
+        });
+    } catch (err) {
+        console.error('Failed to load protocols:', err);
+    }
+}
+
+// Load on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadProtocols();
+    loadPrefixes();
+});
+
+// Enter key triggers search
+document.getElementById('search').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        currentOffset = 0;
+        loadPrefixes();
+    }
+});
+
+// Filter changes reset pagination
+['classification', 'family', 'protocol'].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => {
+        currentOffset = 0;
+        loadPrefixes();
+    });
+});
+
+async function loadPrefixes() {
+    const classification = document.getElementById('classification').value;
+    const family = document.getElementById('family').value;
+    const protocol = document.getElementById('protocol').value;
+    const device = document.getElementById('search').value.trim();
+
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('results').style.display = 'none';
+
+    let url = `/api/prefixes?limit=${limit}&offset=${currentOffset}`;
+    if (classification) url += `&classification=${encodeURIComponent(classification)}`;
+    if (family) url += `&family=${encodeURIComponent(family)}`;
+    if (protocol) url += `&protocol=${encodeURIComponent(protocol)}`;
+    if (device) url += `&device=${encodeURIComponent(device)}`;
+
+    try {
+        const resp = await fetch(url);
+        const data = await resp.json();
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('results').style.display = 'block';
+
+        totalResults = data.total;
+        const v4Count = data.ipv4_count || 0;
+        const v6Count = data.ipv6_count || 0;
+
+        document.getElementById('result-count').textContent = `(${totalResults.toLocaleString()} total)`;
+        document.getElementById('result-stats').innerHTML = `
+            <span class="v4">IPv4: ${v4Count.toLocaleString()}</span>
+            <span class="v6">IPv6: ${v6Count.toLocaleString()}</span>
+        `;
+
+        const tbody = document.getElementById('prefix-table');
+        tbody.innerHTML = data.prefixes.map(p => {
+            const af = p.address_family || (p.prefix.includes(':') ? 'ipv6' : 'ipv4');
+            const afClass = af === 'ipv6' ? 'af-v6' : 'af-v4';
+            const afLabel = af === 'ipv6' ? 'v6' : 'v4';
+            const cls = p.classification || classification;
+
+            return `
+                <tr>
+                    <td class="mono">${p.prefix}</td>
+                    <td><span class="af-badge ${afClass}">${afLabel}</span></td>
+                    <td><span class="badge badge-${cls}">${cls}</span></td>
+                    <td>${p.protocol || '-'}</td>
+                    <td>${p.vrf || 'default'}</td>
+                    <td class="text-right">${(p.devices || []).length}</td>
+                    <td class="mono text-muted" style="font-size: 0.875rem;">
+                        ${(p.next_hops || []).slice(0, 2).join(', ')}
+                        ${(p.next_hops || []).length > 2 ? '...' : ''}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        // Update pagination
+        document.getElementById('prev-btn').disabled = currentOffset === 0;
+        document.getElementById('next-btn').disabled = currentOffset + limit >= totalResults;
+        document.getElementById('pagination').textContent =
+            `Showing ${currentOffset + 1}-${Math.min(currentOffset + limit, totalResults)} of ${totalResults.toLocaleString()}`;
+
+    } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        console.error(err);
+    }
+}
+
+function prevPage() {
+    if (currentOffset >= limit) {
+        currentOffset -= limit;
+        loadPrefixes();
+    }
+}
+
+function nextPage() {
+    if (currentOffset + limit < totalResults) {
+        currentOffset += limit;
+        loadPrefixes();
+    }
+}
+</script>
+{% endblock %}

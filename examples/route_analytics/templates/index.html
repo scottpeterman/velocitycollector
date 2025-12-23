@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1>Routing Table Analysis</h1>
+
+<div class="card-grid">
+    <div class="stat-card">
+        <div class="value">{{ "{:,}".format(summary.get('unique_prefixes', 0)) }}</div>
+        <div class="label">Unique Prefixes</div>
+        <div class="sub-stats">
+            <span class="v4">v4: {{ "{:,}".format(summary.get('unique_ipv4_prefixes', 0)) }}</span>
+            <span class="v6">v6: {{ "{:,}".format(summary.get('unique_ipv6_prefixes', 0)) }}</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="value">{{ "{:,}".format(summary.get('total_prefixes', 0)) }}</div>
+        <div class="label">Total Routes</div>
+        <div class="sub-stats">
+            <span class="v4">v4: {{ "{:,}".format(summary.get('ipv4_prefixes', 0)) }}</span>
+            <span class="v6">v6: {{ "{:,}".format(summary.get('ipv6_prefixes', 0)) }}</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="value">{{ summary.get('total_devices', 0) }}</div>
+        <div class="label">Devices</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">{{ summary.get('total_sites', 0) }}</div>
+        <div class="label">Sites</div>
+    </div>
+</div>
+
+<div class="flex gap-2">
+    <div class="card" style="flex: 1;">
+        <h2>By Classification</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th class="text-right">Unique</th>
+                    <th class="text-right">IPv4</th>
+                    <th class="text-right">IPv6</th>
+                    <th class="text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set unique_v4 = summary.get('unique_by_classification_v4', {}) %}
+                {% set unique_v6 = summary.get('unique_by_classification_v6', {}) %}
+                {% for cls, count in (summary.get('unique_by_classification', {}) | dictsort(by='value', reverse=true)) %}
+                <tr>
+                    <td><span class="badge badge-{{ cls }}">{{ cls }}</span></td>
+                    <td class="text-right mono">{{ "{:,}".format(count) }}</td>
+                    <td class="text-right mono text-muted">{{ "{:,}".format(unique_v4.get(cls, 0)) }}</td>
+                    <td class="text-right mono text-v6">{{ "{:,}".format(unique_v6.get(cls, 0)) }}</td>
+                    <td class="text-right mono">{{ "{:,}".format(summary.get('by_classification', {}).get(cls, 0)) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card" style="flex: 1;">
+        <h2>By Protocol</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Protocol</th>
+                    <th class="text-right">Routes</th>
+                    <th class="text-right">IPv4</th>
+                    <th class="text-right">IPv6</th>
+                    <th class="text-right">%</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set total = summary.get('total_prefixes', 1) %}
+                {% set proto_v4 = summary.get('by_protocol_v4', {}) %}
+                {% set proto_v6 = summary.get('by_protocol_v6', {}) %}
+                {% for proto, count in (summary.get('by_protocol', {}) | dictsort(by='value', reverse=true)) %}
+                <tr>
+                    <td>{{ proto }}</td>
+                    <td class="text-right mono">{{ "{:,}".format(count) }}</td>
+                    <td class="text-right mono text-muted">{{ "{:,}".format(proto_v4.get(proto, 0)) }}</td>
+                    <td class="text-right mono text-v6">{{ "{:,}".format(proto_v6.get(proto, 0)) }}</td>
+                    <td class="text-right mono text-muted">{{ "%.1f"|format(count / total * 100) }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <h2>IP Version Distribution</h2>
+    {% set v4 = summary.get('ipv4_prefixes', 0) %}
+    {% set v6 = summary.get('ipv6_prefixes', 0) %}
+    {% set v4_pct = (v4 / (v4 + v6) * 100) if (v4 + v6) > 0 else 0 %}
+    {% set v6_pct = (v6 / (v4 + v6) * 100) if (v4 + v6) > 0 else 0 %}
+
+    <div class="version-bars">
+        <div class="version-row">
+            <div class="version-label">
+                <span class="version-name">IPv4</span>
+                <span class="version-count mono">{{ "{:,}".format(v4) }} routes</span>
+                <span class="version-pct mono">{{ "%.1f"|format(v4_pct) }}%</span>
+            </div>
+            <div class="bar-container">
+                <div class="bar bar-v4" style="width: {{ v4_pct }}%;"></div>
+            </div>
+        </div>
+        <div class="version-row">
+            <div class="version-label">
+                <span class="version-name">IPv6</span>
+                <span class="version-count mono">{{ "{:,}".format(v6) }} routes</span>
+                <span class="version-pct mono">{{ "%.1f"|format(v6_pct) }}%</span>
+            </div>
+            <div class="bar-container">
+                <div class="bar bar-v6" style="width: {{ v6_pct }}%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unique prefix breakdown -->
+    {% set uv4 = summary.get('unique_ipv4_prefixes', 0) %}
+    {% set uv6 = summary.get('unique_ipv6_prefixes', 0) %}
+    {% set uv4_pct = (uv4 / (uv4 + uv6) * 100) if (uv4 + uv6) > 0 else 0 %}
+    {% set uv6_pct = (uv6 / (uv4 + uv6) * 100) if (uv4 + uv6) > 0 else 0 %}
+
+    <div class="version-bars mt-2" style="opacity: 0.8;">
+        <div class="version-row">
+            <div class="version-label">
+                <span class="version-name text-muted">IPv4 Unique</span>
+                <span class="version-count mono text-muted">{{ "{:,}".format(uv4) }} prefixes</span>
+                <span class="version-pct mono text-muted">{{ "%.1f"|format(uv4_pct) }}%</span>
+            </div>
+            <div class="bar-container" style="height: 16px;">
+                <div class="bar bar-v4" style="width: {{ uv4_pct }}%; opacity: 0.6;"></div>
+            </div>
+        </div>
+        <div class="version-row">
+            <div class="version-label">
+                <span class="version-name text-muted">IPv6 Unique</span>
+                <span class="version-count mono text-muted">{{ "{:,}".format(uv6) }} prefixes</span>
+                <span class="version-pct mono text-muted">{{ "%.1f"|format(uv6_pct) }}%</span>
+            </div>
+            <div class="bar-container" style="height: 16px;">
+                <div class="bar bar-v6" style="width: {{ uv6_pct }}%; opacity: 0.6;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="flex gap-2 mt-2">
+    <a href="/lookup" class="btn">IP Lookup</a>
+    <a href="/trace" class="btn">Path Trace</a>
+    <a href="/browse" class="btn btn-secondary">Browse Prefixes</a>
+    <a href="/sites" class="btn btn-secondary">Site Comparison</a>
+</div>
+{% endblock %}
+
+{% block head %}
+<style>
+    .sub-stats {
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+    .sub-stats .v4 {
+        color: var(--accent);
+    }
+    .sub-stats .v6 {
+        color: var(--success);
+    }
+    .text-v6 {
+        color: var(--success);
+    }
+    .version-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .version-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .version-label {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .version-name {
+        font-weight: 500;
+        min-width: 80px;
+    }
+    .version-count {
+        flex: 1;
+    }
+    .version-pct {
+        min-width: 60px;
+        text-align: right;
+    }
+    .bar-container {
+        height: 24px;
+        background: var(--bg-secondary);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+    .bar-v4 {
+        background: var(--accent);
+    }
+    .bar-v6 {
+        background: var(--success);
+    }
+</style>
+{% endblock %}

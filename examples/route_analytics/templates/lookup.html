@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+{% block title %}IP Lookup{% endblock %}
+
+{% block head %}
+<style>
+    .connected-section {
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    .connected-section h3 {
+        color: #22c55e;
+        font-size: 0.875rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .connected-badge {
+        background: #22c55e;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .connected-row {
+        background: rgba(34, 197, 94, 0.05);
+    }
+    .next-hop-connected {
+        color: #22c55e;
+        font-style: italic;
+    }
+    .af-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .af-v4 {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--accent);
+    }
+    .af-v6 {
+        background: rgba(34, 197, 94, 0.2);
+        color: var(--success);
+    }
+    .query-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>IP Lookup</h1>
+
+<div class="card">
+    <div class="flex gap-2">
+        <input type="text" id="ip-input" placeholder="Enter IP address (e.g., 10.47.32.15 or 2001:db8::1)"
+               style="flex: 1;" autofocus>
+        <button onclick="doLookup()">Locate</button>
+    </div>
+    <p class="text-muted mt-1">Find where an IP is advertised in the routing tables (supports both IPv4 and IPv6)</p>
+</div>
+
+<div id="results" style="display: none;">
+    <div class="card">
+        <div class="flex justify-between items-center mb-2">
+            <div class="query-info">
+                <h2>Results for <span id="query-ip" class="mono"></span></h2>
+                <span id="query-af" class="af-badge"></span>
+            </div>
+            <span id="match-count" class="badge"></span>
+        </div>
+
+        <!-- Directly Connected Section -->
+        <div id="connected-section" class="connected-section" style="display: none;">
+            <h3>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                Directly Connected
+            </h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Device</th>
+                        <th>Prefix</th>
+                        <th>Next Hop</th>
+                        <th>Protocol</th>
+                        <th>VRF</th>
+                    </tr>
+                </thead>
+                <tbody id="connected-table"></tbody>
+            </table>
+        </div>
+
+        <!-- All Matches Section -->
+        <div id="all-matches" class="mt-2">
+            <h3 style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                All Routing Table Entries
+            </h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Device</th>
+                        <th>Prefix</th>
+                        <th>Next Hop</th>
+                        <th>Protocol</th>
+                        <th>VRF</th>
+                    </tr>
+                </thead>
+                <tbody id="matches-table"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="no-results" class="card" style="display: none; text-align: center; padding: 3rem;">
+    <p style="font-size: 1.25rem; color: var(--text-secondary);">No matching prefixes found</p>
+    <p class="text-muted mt-1">This IP is not covered by any prefix in the routing tables</p>
+</div>
+
+<div id="error" class="card" style="display: none; border-color: var(--error);">
+    <p style="color: var(--error);"></p>
+</div>
+
+<div id="loading" style="display: none; text-align: center; padding: 2rem;">
+    <div class="spinner"></div>
+    <p class="text-muted mt-1">Looking up...</p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const input = document.getElementById('ip-input');
+
+input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') doLookup();
+});
+
+async function doLookup() {
+    const ip = input.value.trim();
+    if (!ip) return;
+
+    // Reset UI
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('no-results').style.display = 'none';
+    document.getElementById('error').style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
+
+    try {
+        const resp = await fetch(`/api/lookup/${encodeURIComponent(ip)}`);
+        const data = await resp.json();
+
+        document.getElementById('loading').style.display = 'none';
+
+        if (!resp.ok) {
+            showError(data.error || 'Lookup failed');
+            return;
+        }
+
+        if (data.match_count === 0) {
+            document.getElementById('no-results').style.display = 'block';
+            return;
+        }
+
+        // Show results
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('query-ip').textContent = data.query;
+
+        // Show address family badge
+        const af = data.address_family || (ip.includes(':') ? 'ipv6' : 'ipv4');
+        const afBadge = document.getElementById('query-af');
+        afBadge.textContent = af.toUpperCase();
+        afBadge.className = `af-badge ${af === 'ipv6' ? 'af-v6' : 'af-v4'}`;
+
+        document.getElementById('match-count').textContent = `${data.match_count} match${data.match_count !== 1 ? 'es' : ''}`;
+        
+        // Split into connected and other
+        const connected = data.all_matches.filter(m => m.is_connected);
+        const other = data.all_matches.filter(m => !m.is_connected);
+        
+        // Connected section
+        const connectedSection = document.getElementById('connected-section');
+        const connectedTable = document.getElementById('connected-table');
+        
+        if (connected.length > 0) {
+            connectedSection.style.display = 'block';
+            connectedTable.innerHTML = connected.flatMap(m => 
+                (m.connected_devices || []).map(device => `
+                    <tr>
+                        <td><strong>${device}</strong></td>
+                        <td class="mono">${m.prefix}</td>
+                        <td class="next-hop-connected">directly connected</td>
+                        <td><span class="connected-badge">DIRECT</span></td>
+                        <td>${m.vrf}</td>
+                    </tr>
+                `)
+            ).join('');
+            document.getElementById('match-count').className = 'badge badge-public';
+        } else {
+            connectedSection.style.display = 'none';
+            document.getElementById('match-count').className = `badge badge-${data.best_match?.classification || 'private'}`;
+        }
+        
+        // All matches table - show each device separately
+        const tbody = document.getElementById('matches-table');
+        let rows = [];
+        
+        for (const m of data.all_matches) {
+            const connectedSet = new Set(m.connected_devices || []);
+            
+            // First show connected devices for this prefix
+            for (const device of (m.connected_devices || [])) {
+                rows.push(`
+                    <tr class="connected-row">
+                        <td><strong>${device}</strong></td>
+                        <td class="mono">${m.prefix}</td>
+                        <td class="next-hop-connected">directly connected</td>
+                        <td><span class="connected-badge">DIRECT</span></td>
+                        <td>${m.vrf}</td>
+                    </tr>
+                `);
+            }
+            
+            // Then show non-connected devices
+            for (const device of m.devices) {
+                if (!connectedSet.has(device)) {
+                    rows.push(`
+                        <tr>
+                            <td>${device}</td>
+                            <td class="mono">${m.prefix}</td>
+                            <td class="mono">${m.next_hops.slice(0, 2).join(', ') || '-'}${m.next_hops.length > 2 ? '...' : ''}</td>
+                            <td>${m.protocol}</td>
+                            <td>${m.vrf}</td>
+                        </tr>
+                    `);
+                }
+            }
+        }
+        
+        tbody.innerHTML = rows.join('');
+        
+    } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        showError(err.message);
+    }
+}
+
+function showError(msg) {
+    const el = document.getElementById('error');
+    el.style.display = 'block';
+    el.querySelector('p').textContent = msg;
+}
+</script>
+{% endblock %}

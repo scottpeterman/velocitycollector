@@ -1,0 +1,3 @@
+ python ../../tfsm_coverage_analyzer.py --extract --json  report.json --collections-dir ~/.vcollector/collections/
+
+  python route_report_server.py --data extracted/routes.json --port 8080

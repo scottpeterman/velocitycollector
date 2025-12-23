@@ -16,7 +16,7 @@ with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 # Version
-VERSION = '0.3.1'
+VERSION = '0.3.2'
 
 setup(
     name='velocitycollector',
