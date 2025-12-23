@@ -17,11 +17,11 @@ Route Analytics transforms raw routing table output from VelocityCollector into 
 *Route table analysis with prefix counts, protocol breakdown, and IPv4/IPv6 distribution*
 
 ### Prefix Browser
-![Browser](screenshots/route_table_browser.png)
+![Browser](../../screenshots/route_table_browser.png)
 *Browse and filter prefixes by classification, protocol, address family, and device*
 
 ### IP Lookup
-![Lookup](screenshots/route_table_lookup.png)
+![Lookup](../../screenshots/route_table_lookup.png)
 *Find all devices with routes to a specific IP, showing connected vs learned routes*
 
 ## Quick Start
