@@ -13,7 +13,7 @@ Route Analytics transforms raw routing table output from VelocityCollector into 
 ## Screenshots
 
 ### Dashboard
-![Dashboard](screenshots/route_table_analysis.png)
+![Dashboard](../../screenshots/route_table_analysis.png)
 *Route table analysis with prefix counts, protocol breakdown, and IPv4/IPv6 distribution*
 
 ### Prefix Browser
