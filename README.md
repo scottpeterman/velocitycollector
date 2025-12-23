@@ -17,15 +17,15 @@ Route Analytics transforms raw routing table output from VelocityCollector into 
 ## Screenshots
 
 ### Dashboard
-![Dashboard](../../screenshots/route_table_analysis.png)
+![Dashboard](https://raw.githubusercontent.com/scottpeterman/velocitycollector/main/screenshots/route_table_analysis.png)
 *Route table analysis with prefix counts, protocol breakdown, and IPv4/IPv6 distribution*
 
 ### Prefix Browser
-![Browser](../../screenshots/route_table_browser.png)
+![Browser](https://raw.githubusercontent.com/scottpeterman/velocitycollector/main/screenshots/route_table_browser.png)
 *Browse and filter prefixes by classification, protocol, address family, and device*
 
 ### IP Lookup
-![Lookup](../../screenshots/route_table_lookup.png)
+![Lookup](https://raw.githubusercontent.com/scottpeterman/velocitycollector/main/screenshots/route_table_lookup.png)
 *Find all devices with routes to a specific IP, showing connected vs learned routes*
 
 ## Quick Start
@@ -33,7 +33,6 @@ Route Analytics transforms raw routing table output from VelocityCollector into 
 ### 1. Collect Route Data
 
 First, collect routing tables from your devices using VelocityCollector:
-
 ```bash
 # Create a job for route collection (GUI or CLI)
 vcollector run --job cisco-routes
@@ -44,7 +43,6 @@ This saves raw output to `~/.vcollector/collections/routes/`
 ### 2. Extract & Parse Routes
 
 Use the coverage analyzer to extract structured route data from collections:
-
 ```bash
 python tfsm_coverage_analyzer.py \
     --extract \
@@ -61,7 +59,6 @@ This parses all route outputs using TextFSM templates and produces a consolidate
 ### 3. Start the Route Browser
 
 Launch the Flask web server:
-
 ```bash
 python route_report_server.py --data extracted/routes.json --port 8080
 ```
@@ -71,7 +68,6 @@ Open http://127.0.0.1:8080 in your browser.
 ## CLI Reference
 
 ### Extract Routes
-
 ```bash
 python tfsm_coverage_analyzer.py \
     --extract \
@@ -86,7 +82,6 @@ Options:
 ```
 
 ### Run Server
-
 ```bash
 python route_report_server.py --data <routes.json> [options]
 
@@ -151,7 +146,6 @@ The Flask app exposes a REST API for programmatic access:
 | `GET /api/trace/device/<ip>` | Find device owning an IP |
 
 ## Example API Usage
-
 ```bash
 # Get summary statistics
 curl http://localhost:8080/api/summary
@@ -179,7 +173,6 @@ curl http://localhost:8080/api/sites/compare
 ### Input (from tfsm_coverage_analyzer.py)
 
 The extracted routes JSON follows this structure:
-
 ```json
 {
   "capture_type": "routes",
@@ -211,7 +204,6 @@ The extracted routes JSON follows this structure:
 ### Analyzed Output
 
 After route_analyzer.py processes the data:
-
 ```json
 {
   "summary": {
@@ -257,7 +249,6 @@ Compare route tables before and after network changes by extracting data at diff
 Identify unexpected routes, rogue static entries, or missing redundancy paths.
 
 ## File Structure
-
 ```
 examples/route_analytics/
 ├── README.md                  # This file
@@ -284,7 +275,6 @@ examples/route_analytics/
 - Flask
 - VelocityCollector (for data collection)
 - TextFSM templates for route parsing (included in vcollector)
-
 ```bash
 pip install flask
 ```
@@ -316,5 +306,3 @@ GPLv3 License — Part of the VelocityCollector project
 ## Author
 
 Scott Peterman — Network Automation Tooling
-
-
